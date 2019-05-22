@@ -23,7 +23,7 @@
 #'
 #' @examples
 #'    # Describe file names
-#'    dir <- system.file("extdata",package="CytofNorm")
+#'    dir <- system.file("extdata",package="CytoNorm")
 #'    fileNames <- c("Gates_PTLG021_Unstim_Control_1.fcs",
 #'                    "Gates_PTLG026_Unstim_Control_1.fcs")
 #'    labels <- c("PTLG021","PTLG026")

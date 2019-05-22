@@ -23,7 +23,7 @@
 #'
 #' @return A list containing all the splines and quantile information. This can
 #'         be used as input for the \code{\link{QuantileNorm.normalize}} function.
-#' @seealso   \code{\link{CytofNorm.train}}, \code{\link{QuantileNorm.normalize}}
+#' @seealso   \code{\link{CytoNorm.train}}, \code{\link{QuantileNorm.normalize}}
 #'
 #' @examples
 #'
