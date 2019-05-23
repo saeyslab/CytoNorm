@@ -47,5 +47,5 @@ after this function to reverse the batch effects on other files.
 
 }
 \seealso{
-\code{\link{CytofNorm.train}}, \code{\link{QuantileNorm.normalize}}
+\code{\link{CytoNorm.train}}, \code{\link{QuantileNorm.normalize}}
 }
