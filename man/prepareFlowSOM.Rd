@@ -6,7 +6,7 @@
 \usage{
 prepareFlowSOM(files, colsToUse, nCells = 1e+06,
   FlowSOM.params = list(xdim = 15, ydim = 15, nClus = 30, scale = FALSE),
-  transformList = NULL, plot = FALSE, seed = NULL)
+  transformList = NULL, plot = FALSE, verbose = FALSE, seed = NULL)
 }
 \arguments{
 \item{files}{Files to use (with path)}
@@ -27,6 +27,8 @@ scale = FALSE)}.}
 
 \item{plot}{If TRUE, the FlowSOM tree is plotted. Default = FALSE.}
 
+\item{verbose}{If TRUE, extra output is printed while running.}
+
 \item{seed}{If not NULL, set.seed is called with this argument for
 reproducable results. Default = NULL.}
 }
@@ -40,5 +42,6 @@ groups of similar cells. Typically you will not call this function, but use
 the wrapper function \code{\link{CytoNorm.train}} instead.
 }
 \examples{
+
 
 }

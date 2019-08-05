@@ -14,6 +14,12 @@
 #'                    \code{transform} function
 #' @param minmax_q    Quantiles to approximate minimum and maximum. Use c(0,1)
 #'                    for exact minimum and maximum. Default = c(0.001, 0.999)
+#' @param goal        Goal distribution. Default "mean", can also be two numeric
+#'                    values or one of the batch labels.
+#' @param verbose     Extra output is printed when TRUE. Default FALSE.
+#' @param plot        If TRUE, a plot is generated (using the \code{layout}
+#'                    function) showing all quantiles. Default = FALSE.
+#' @param plotTitle   Title to use in the plot. Default = "QMinMax".
 #'
 #' @return A list containing the min max information. This can
 #'         be used as input for the \code{\link{MinMaxNorm.normalize}} function.
@@ -27,9 +33,10 @@ MinMaxNorm.train <- function(files,
                              channels,
                              transformList,
                              minmax_q = c(0.001, 0.999),
+                             goal = "mean",
                              verbose = FALSE,
                              plot = FALSE,
-                             plotTitle = "Min Max"){
+                             plotTitle = "QMinMax"){
 
     if(length(labels) != length(files)){
         stop("Input parameters 'labels' and 'files'",
@@ -66,7 +73,18 @@ MinMaxNorm.train <- function(files,
                                  })
     }
 
-    minmax[["goal"]] <- Reduce("+", minmax) / length(minmax)
+    if (goal == "mean") {
+        minmax[["goal"]] <- Reduce("+", minmax) / length(minmax)
+    } else if (is(goal, "numeric")) {
+        if(length(goal) != 2) { stop("Goal should be 'mean', a batch label",
+                                      "or a numeric vector of length 2")}
+        minmax[["goal"]] <- goal
+    } else if (goal %in% unique(labels)) {
+        minmax[["goal"]] <- minmax[[goal]]
+    } else {
+        stop("Goal should be 'mean', a batch label",
+             "or a numeric vector of length 2")
+    }
 
     named.list(channels, minmax)
 }

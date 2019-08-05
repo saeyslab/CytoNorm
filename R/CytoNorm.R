@@ -17,12 +17,18 @@
 #' @param transformList Transformation list to pass to the flowCore
 #'                      \code{transform} function. Default = NULL.
 #' @param plot      If TRUE, the FlowSOM tree is plotted. Default = FALSE.
+#' @param verbose   If TRUE, extra output is printed while running.
 #' @param seed      If not NULL, set.seed is called with this argument for
 #'                  reproducable results. Default = NULL.
 #'
 #' @return FlowSOM object describing the FlowSOM clustering
 #'
 #' @examples
+#'
+#'
+#' @importFrom dplyr '%>%' filter
+#' @importFrom flowCore read.FCS transformList colnames
+#' @importFrom stringr str_match
 #'
 #' @export
 prepareFlowSOM <- function(files,
@@ -34,11 +40,13 @@ prepareFlowSOM <- function(files,
                                                  scale = FALSE),
                            transformList = NULL,
                            plot = FALSE,
+                           verbose = FALSE,
                            seed = NULL){
 
-    message("Running the FlowSOM algorithm ... ")
-    set.seed(seed)
-    ff <- FlowSOM::AggregateFlowFrames(files, nCells)
+    if (verbose) message("Aggregating files ... ")
+
+    if(!is.null(seed)) set.seed(seed)
+    o <- capture.output( ff <- FlowSOM::AggregateFlowFrames(files, nCells))
     if(!is.null(transformList)) ff <- flowCore::transform(ff, transformList)
 
     FlowSOM.params <- c(FlowSOM.params,
@@ -47,9 +55,10 @@ prepareFlowSOM <- function(files,
                              seed = seed))
     FlowSOM.params <- FlowSOM.params[unique(names(FlowSOM.params))]
 
+    if (verbose) message("Running the FlowSOM algorithm ... ")
     fsom <- do.call(FlowSOM::FlowSOM, FlowSOM.params)
 
-    if(plot){
+    if (plot) {
         # Plot result
         FlowSOM::PlotStars(fsom$FlowSOM,
                            backgroundValues = fsom$metaclustering)
@@ -115,8 +124,7 @@ CytoNorm.train <- function(files,
                                                   nClus = 30,
                                                   scale = FALSE),
                             normMethod.train = QuantileNorm.train,
-                            normParams = list(nQ = 21,
-                                              spar = 0.5),
+                            normParams = list(nQ = 21),
                             seed = NULL,
                             clean = TRUE,
                             plot = FALSE,
@@ -133,31 +141,39 @@ CytoNorm.train <- function(files,
         dirCreated = dir.create(outputDir)
     }
 
-    # Compute clustering
-    if (plot) {
-        grDevices::pdf(file.path(outputDir, "CytoNorm_FlowSOM.pdf"),
-                       height=15, width=20)
-    }
+    if(!file.exists(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))){
+        # Compute clustering
+        if (plot) {
+            grDevices::pdf(file.path(outputDir, "CytoNorm_FlowSOM.pdf"),
+                           height=15, width=20)
+        }
 
 
-    nCells <- FlowSOM.params[["nCells"]]
-    if(is.null(FlowSOM.params[["channels"]])){
-        FlowSOM.channels <- channels
+        nCells <- FlowSOM.params[["nCells"]]
+        if(is.null(FlowSOM.params[["channels"]])){
+            FlowSOM.channels <- channels
+        } else {
+            FlowSOM.channels <- FlowSOM.params[["channels"]]
+        }
+        FlowSOM.params <- FlowSOM.params[grep("nCells|channels",
+                                              names(FlowSOM.params),
+                                              invert = TRUE)]
+        fsom <- prepareFlowSOM(files = files,
+                               nCells = nCells,
+                               FlowSOM.params = FlowSOM.params,
+                               transformList = transformList,
+                               colsToUse = FlowSOM.channels,
+                               plot = plot,
+                               seed = seed)
+
+        if (plot) {
+            grDevices::dev.off()
+            saveRDS(fsom, file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
+        }
     } else {
-        FlowSOM.channels <- FlowSOM.params[["channels"]]
+        fsom <- readRDS(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
+        warning("Reusing previously saved FlowSOM result.")
     }
-    FlowSOM.params <- FlowSOM.params[grep("nCells|channels",
-                                          names(FlowSOM.params),
-                                          invert = TRUE)]
-    fsom <- prepareFlowSOM(files = files,
-                           nCells = nCells,
-                           FlowSOM.params = FlowSOM.params,
-                           transformList = transformList,
-                           colsToUse = FlowSOM.channels,
-                           plot = plot,
-                           seed = seed)
-
-    if (plot) { grDevices::dev.off() }
 
     # Split files by clusters
     for(file in files){
@@ -201,7 +217,7 @@ CytoNorm.train <- function(files,
                             list(files = file.path(outputDir,
                                                    paste0(gsub("/", "_", files),
                                                           "_fsom", cluster, ".fcs")),
-                                 labels = labels,
+                                 labels = as.character(labels),
                                  channels = channels,
                                  transformList = NULL,
                                  verbose = verbose,
@@ -215,10 +231,12 @@ CytoNorm.train <- function(files,
 
     if(clean){
         for(cluster in unique(fsom$metaclustering)){
-            file.remove(file.path(outputDir,
-                        paste0(gsub("/","_",files),"_fsom",cluster,".fcs")))
+            tmp_files <- file.path(outputDir,
+                                   paste0(gsub("/","_",files),"_fsom",cluster,".fcs"))
+
+            file.remove(tmp_files[file.exists(tmp_files)])
         }
-        if(dirCreated){
+        if(dirCreated & !plot){
             unlink(outputDir, recursive=TRUE)
         }
     }

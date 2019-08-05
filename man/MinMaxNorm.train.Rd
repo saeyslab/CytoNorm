@@ -5,8 +5,8 @@
 \title{MinMaxNorm.train}
 \usage{
 MinMaxNorm.train(files, labels, channels, transformList,
-  minmax_q = c(0.001, 0.999), verbose = FALSE, plot = FALSE,
-  plotTitle = "Min Max")
+  minmax_q = c(0.001, 0.999), goal = "mean", verbose = FALSE,
+  plot = FALSE, plotTitle = "QMinMax")
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the control samples}
@@ -21,6 +21,16 @@ belongs, e.g. the plate ID.}
 
 \item{minmax_q}{Quantiles to approximate minimum and maximum. Use c(0,1)
 for exact minimum and maximum. Default = c(0.001, 0.999)}
+
+\item{goal}{Goal distribution. Default "mean", can also be two numeric
+values or one of the batch labels.}
+
+\item{verbose}{Extra output is printed when TRUE. Default FALSE.}
+
+\item{plot}{If TRUE, a plot is generated (using the \code{layout}
+function) showing all quantiles. Default = FALSE.}
+
+\item{plotTitle}{Title to use in the plot. Default = "QMinMax".}
 }
 \value{
 A list containing the min max information. This can

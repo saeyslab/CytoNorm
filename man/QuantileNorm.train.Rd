@@ -4,9 +4,9 @@
 \alias{QuantileNorm.train}
 \title{QuantileNorm.train}
 \usage{
-QuantileNorm.train(files, labels, channels, transformList, nQ = 21,
-  spar = 0.5, verbose = FALSE, plot = FALSE,
-  plotTitle = "Quantiles")
+QuantileNorm.train(files, labels, channels, transformList, nQ = 101,
+  limit = NULL, quantile_values = NULL, goal = "mean",
+  verbose = FALSE, plot = FALSE, plotTitle = "Quantiles")
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the control samples}
@@ -19,11 +19,17 @@ belongs, e.g. the plate ID.}
 \item{transformList}{Transformation list to pass to the flowCore
 \code{transform} function}
 
-\item{nQ}{Number of quantiles to use. Default = 21, which results in
-quantiles for every 5 percent of the data.}
+\item{nQ}{Number of quantiles to use. Default = 101, which results in
+quantiles for every percent of the data.}
 
-\item{spar}{Smoothing parameter, typically between (0,1]. Default=0.5
-See \code{smooth.spline} from the \code{stats} package}
+\item{quantile_values}{If specified, it should be a vector of length nQ with
+values between 0 and 1, giving the percentages at
+which the quantiles should be computed. If NULL
+(default), the quantiles will be evenly distributed,
+including 0 and 1.}
+
+\item{goal}{Goal distribution. Default "mean", can also be nQ numeric
+values or one of the batch labels.}
 
 \item{verbose}{If TRUE, progress updates are printed. Default = FALSE.}
 
@@ -44,6 +50,79 @@ Typically, you will use the function \code{\link{QuantileNorm.normalize}}
 after this function to reverse the batch effects on other files.
 }
 \examples{
+
+dir <- system.file("extdata", package = "CytoNorm")
+files <- list.files(dir, pattern = "fcs$")
+data <- data.frame(File = files,
+                   Path = file.path(dir, files),
+                   Type = stringr::str_match(files, "_([12]).fcs")[,2],
+                   Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+                   stringsAsFactors = FALSE)
+data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+train_data <- dplyr::filter(data, Type == "Train")
+
+ff <- flowCore::read.FCS(data$Path[1])
+channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+transformList <- flowCore::transformList(channels,
+                                         cytofTransform)
+
+png("nQ101.png",
+    width = length(channels) * 300,
+    height = (nrow(train_data) * 2 + 1) * 300)
+model_nQ_101 <- QuantileNorm.train(
+  files = train_data$Path,
+  labels = train_data$Batch,
+  channels = channels,
+  transformList = transformList,
+  nQ = 101,
+  plot = TRUE)
+dev.off()
+
+png("nQ101_limited.png",
+    width = length(channels) * 300,
+    height = (nrow(train_data) * 2 + 1) * 300)
+model_nQ_101 <- QuantileNorm.train(
+  files = train_data$Path,
+  labels = train_data$Batch,
+  channels = channels,
+  transformList = transformList,
+  nQ = 101,
+  limit = c(0,8),
+  plot = TRUE)
+dev.off()
+
+png("nQ_2.png",
+    width = length(channels) * 300,
+    height = (nrow(train_data) * 2 + 1) * 300)
+model_nQ_2 <- QuantileNorm.train(
+  files = train_data$Path,
+  labels = train_data$Batch,
+  channels = channels,
+  transformList = transformList,
+  nQ = 2,
+  quantile_values = c(0.001, 0.999),
+  plot = TRUE)
+dev.off()
+
+model_goal_mean <- QuantileNorm.train(
+  files = train_data$Path,
+  labels = train_data$Batch,
+  channels = channels,
+  transformList = transformList)
+
+model_goal_batch1 <- QuantileNorm.train(
+  files = train_data$Path,
+  labels = train_data$Batch,
+  channels = channels,
+  transformList = transformList,
+  goal = "PTLG021")
+
+model_goal_fixed <- QuantileNorm.train(
+  files = train_data$Path,
+  labels = train_data$Batch,
+  channels = channels,
+  transformList = transformList,
+  goal = seq(0, 1, by = 0.05))
 
 }
 \seealso{

@@ -1,3 +1,136 @@
+#' getQuantiles
+#'
+#' @param files       Full paths of to the fcs files of the samples
+#' @param channels    Names of the channels to compute the quantiles for
+#' @param transformList   Transformation list to pass to the flowCore
+#'                    \code{transform} function
+#' @param nQ          Number of quantiles to compute Default = 101, which
+#'                    results in quantiles for every percent of the data.
+#'                    Ignored if quantile_values is given.
+#' @param quantile_values Vector of length with values between 0 and 1, giving
+#'                        the percentages at which the quantiles should be
+#'                        computed. If NULL (default), the quantiles will be
+#'                        evenly distributed, including 0 and 1.
+#' @param labels      A label for every file, indicating to which group it
+#'                    belongs. If multiple files have the same label, they
+#'                    get aggregated. If NULL, all files are handled separately.
+#' @param selection   List with indexation vector for every file.
+#' @param verbose     If TRUE, extra output is printed. Default = FALSE
+#' @param plot        If TRUE, plots are generated showing all quantiles.
+#'                    Default = FALSE.
+#'
+#' @examples
+#' dir <- system.file("extdata", package = "CytoNorm")
+#' files <- list.files(dir, pattern = "fcs$")
+#'
+#' ff <- flowCore::read.FCS(file.path(dir, files[1]))
+#' channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+#' transformList <- flowCore::transformList(channels,
+#'                                          cytofTransform)
+#'
+#' quantiles <- getQuantiles(files = file.path(dir, files),
+#'                           channels = channels,
+#'                           transformList = transformList)
+#'
+#' pheatmap::pheatmap(quantiles[[1]],
+#'                    cluster_rows = FALSE,
+#'                    cluster_cols = FALSE,
+#'                    labels_col =
+#'                      paste0(FlowSOM::get_markers(ff, colnames(quantiles[[1]])),
+#'                             " (", colnames(quantiles[[1]]), ")"),
+#'                    main = files[1])
+#'
+#' @export
+getQuantiles <- function(files,
+                         channels,
+                         nQ = 101,
+                         quantile_values = NULL,
+                         transformList = NULL,
+                         labels = NULL,
+                         selection = NULL,
+                         verbose = FALSE,
+                         plot = FALSE){
+
+    if (is.null(labels)) labels <- files
+
+    # Compute quantiles for each label
+    if (verbose) message("Computing Quantiles")
+
+    quantiles <- list()
+
+    if (is.null(quantile_values)) {
+        quantile_values <- c(0, (1:(nQ-1))/(nQ-1))
+    } else {
+        nQ <- length(quantile_values)
+    }
+
+    for(label in unique(labels)){
+        ids <- which(labels == label & file.exists(files))
+        if(verbose) message("  ", label, " (", paste(ids, collapse = "," ), ")")
+
+        # Read the file(s) and transform if necessary
+        if (length(ids) > 1) {
+            ff <- FlowSOM::AggregateFlowFrames(files[ids], 1e12, keepOrder = TRUE)
+        } else if(length(ids) == 1) {
+            o <- capture.output(ff <- flowCore::read.FCS(files[ids]))
+            if (verbose) message(o)
+        } else {
+            ff <- NULL
+        }
+
+        if (!is.null(ff) && !is.null(transformList)) {
+            ff <- flowCore::transform(ff, transformList)
+        }
+
+        if (!is.null(ff) & !is.null(selection)){
+            ff <- ff[selection[[file]], ]
+        }
+
+
+        # Compute quantiles for all channels to normalize
+        if (!is.null(ff) && flowCore::nrow(ff) > 50) {
+            quantiles[[label]] <- apply(flowCore::exprs(ff)[, channels],
+                                        2,
+                                        function(x){
+                                            stats::quantile(x,
+                                                            quantile_values)
+                                        })
+
+            if(plot){
+                textPlot(label)
+                for(channel in channels){
+                    dens <- stats::density(flowCore::exprs(ff)[, channel],
+                                           bw = 0.1)
+                    graphics::plot(dens,
+                                   bty = "n", xaxt = "n", yaxt = "n",
+                                   xlab = "", ylab = "", main = "",
+                                   xlim = c(0,
+                                            max(flowCore::exprs(ff)[, channel],
+                                                8)))
+                    graphics::abline(v = quantiles[[label]][, channel],
+                                     col = "grey")
+                    graphics::lines(dens, lwd = 2)
+                }
+            }
+        } else {
+            message("Less then 50 cells in ", label, ". No quantiles computed.")
+            quantiles[[label]] <- matrix(NA,
+                                         nrow = nQ,
+                                         ncol = length(channels),
+                                         dimnames = list(as.character(quantile_values),
+                                                         channels))
+            if(plot){
+                textPlot(label)
+                for(channel in channels){
+                   textPlot("NA")
+                }
+            }
+        }
+    }
+
+    return(quantiles)
+}
+
 #' QuantileNorm.train
 #'
 #' Learn the batch effects from control samples.
@@ -12,10 +145,15 @@
 #' @param channels    Names of the channels to normalize
 #' @param transformList   Transformation list to pass to the flowCore
 #'                    \code{transform} function
-#' @param nQ          Number of quantiles to use. Default = 21, which results in
-#'                    quantiles for every 5 percent of the data.
-#' @param spar        Smoothing parameter, typically between (0,1]. Default=0.5
-#'                    See \code{smooth.spline} from the \code{stats} package
+#' @param nQ          Number of quantiles to use. Default = 101, which results in
+#'                    quantiles for every percent of the data.
+#' @param quantile_values If specified, it should be a vector of length nQ with
+#'                        values between 0 and 1, giving the percentages at
+#'                        which the quantiles should be computed. If NULL
+#'                        (default), the quantiles will be evenly distributed,
+#'                        including 0 and 1.
+#' @param goal        Goal distribution. Default "mean", can also be nQ numeric
+#'                    values or one of the batch labels.
 #' @param plot        If TRUE, a plot is generated (using the \code{layout}
 #'                    function) showing all quantiles. Default = FALSE.
 #' @param plotTitle   Title to use in the plot. Default = "Quantiles".
@@ -27,13 +165,88 @@
 #'
 #' @examples
 #'
+#' dir <- system.file("extdata", package = "CytoNorm")
+#' files <- list.files(dir, pattern = "fcs$")
+#' data <- data.frame(File = files,
+#'                    Path = file.path(dir, files),
+#'                    Type = stringr::str_match(files, "_([12]).fcs")[,2],
+#'                    Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+#'                    stringsAsFactors = FALSE)
+#' data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+#' train_data <- dplyr::filter(data, Type == "Train")
+#'
+#' ff <- flowCore::read.FCS(data$Path[1])
+#' channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+#' transformList <- flowCore::transformList(channels,
+#'                                          cytofTransform)
+#'
+#' png("nQ101.png",
+#'     width = length(channels) * 300,
+#'     height = (nrow(train_data) * 2 + 1) * 300)
+#' model_nQ_101 <- QuantileNorm.train(
+#'   files = train_data$Path,
+#'   labels = train_data$Batch,
+#'   channels = channels,
+#'   transformList = transformList,
+#'   nQ = 101,
+#'   plot = TRUE)
+#' dev.off()
+#'
+#' png("nQ101_limited.png",
+#'     width = length(channels) * 300,
+#'     height = (nrow(train_data) * 2 + 1) * 300)
+#' model_nQ_101 <- QuantileNorm.train(
+#'   files = train_data$Path,
+#'   labels = train_data$Batch,
+#'   channels = channels,
+#'   transformList = transformList,
+#'   nQ = 101,
+#'   limit = c(0,8),
+#'   plot = TRUE)
+#' dev.off()
+#'
+#' png("nQ_2.png",
+#'     width = length(channels) * 300,
+#'     height = (nrow(train_data) * 2 + 1) * 300)
+#' model_nQ_2 <- QuantileNorm.train(
+#'   files = train_data$Path,
+#'   labels = train_data$Batch,
+#'   channels = channels,
+#'   transformList = transformList,
+#'   nQ = 2,
+#'   quantile_values = c(0.001, 0.999),
+#'   plot = TRUE)
+#' dev.off()
+#'
+#' model_goal_mean <- QuantileNorm.train(
+#'   files = train_data$Path,
+#'   labels = train_data$Batch,
+#'   channels = channels,
+#'   transformList = transformList)
+#'
+#' model_goal_batch1 <- QuantileNorm.train(
+#'   files = train_data$Path,
+#'   labels = train_data$Batch,
+#'   channels = channels,
+#'   transformList = transformList,
+#'   goal = "PTLG021")
+#'
+#' model_goal_fixed <- QuantileNorm.train(
+#'   files = train_data$Path,
+#'   labels = train_data$Batch,
+#'   channels = channels,
+#'   transformList = transformList,
+#'   goal = seq(0, 1, by = 0.05))
+#'
 #' @export
 QuantileNorm.train <- function(files,
                                labels,
                                channels,
                                transformList,
-                               nQ = 21,
-                               spar = 0.5,
+                               nQ = 101,
+                               limit = NULL,
+                               quantile_values = NULL,
+                               goal = "mean",
                                verbose = FALSE,
                                plot = FALSE,
                                plotTitle = "Quantiles"){
@@ -45,17 +258,13 @@ QuantileNorm.train <- function(files,
 
     labels <- as.character(labels)
 
-    # Compute quantiles for each label
-    if(verbose) message("Computing Quantiles")
-    quantiles <- list()
-
     if(plot){
         xdim = 1 + length(channels)
         ydim = 2 + 2*length(unique(labels))
         graphics::layout(matrix(1:(xdim*ydim), ncol = xdim, byrow = TRUE))
         graphics::par(mar=c(1, 1, 0, 0))
         textPlot(plotTitle)
-        ff_tmp <- flowCore::read.FCS(files[1])
+        ff_tmp <- flowCore::read.FCS(files[file.exists(files)][1])
 
         for(channel in channels){
             marker <- flowCore::getChannelMarker(ff_tmp, channel)[,2]
@@ -67,71 +276,42 @@ QuantileNorm.train <- function(files,
         }
     }
 
-    for(label in unique(labels)){
-        ids <- which(labels == label & file.exists(files))
-        if(verbose) message("  ", label, "(", paste(ids, collapse = "," ), ")")
-
-        # Read the file(s) and transform if necessary
-        if (length(ids) > 1) {
-            ff <- FlowSOM::AggregateFlowFrames(files[ids], 1e12, keepOrder = TRUE)
-        } else if(length(ids) == 1) {
-            ff <- flowCore::read.FCS(files[ids])
-        } else {
-            ff <- NULL
-        }
-
-        if (!is.null(ff) && !is.null(transformList)) {
-            ff <- flowCore::transform(ff, transformList)
-        }
-
-        # Compute quantiles for all channels to normalize
-        if(!is.null(ff) && flowCore::nrow(ff) > nQ){
-            quantiles[[label]] <- apply(flowCore::exprs(ff)[, channels],
-                                            2,
-                                            function(x){
-                                                stats::quantile(x,
-                                                                c(0,(1:(nQ-1))/
-                                                                      (nQ-1)))
-                                            })
-
-            if(plot){
-                textPlot(label)
-                for(channel in channels){
-                    dens <- stats::density(flowCore::exprs(ff)[, channel],
-                                           bw = 0.1)
-                    graphics::plot(dens,
-                         bty = "n", xaxt = "n", yaxt = "n",
-                         xlab = "", ylab = "", main = "",
-                         xlim = c(0,
-                                  max(flowCore::exprs(ff)[, channel], 7)))
-                    graphics::abline(v = quantiles[[label]][, channel],
-                                     col = "grey")
-                    graphics::lines(dens, lwd = 2)
-                }
-            }
-        } else {
-            warning("Not enough cells in file ",files[ids],
-                    "\nThe identity function will be used.")
-            quantiles[[label]] <- matrix(NA,
-                                         nrow = nQ,
-                                         ncol = length(channels),
-                                         dimnames = list(c(0,(1:(nQ-1))/(nQ-1)),
-                                                    channels))
-        }
-    }
+    quantiles <- getQuantiles(files = files,
+                              labels = labels,
+                              channels = channels,
+                              transformList = transformList,
+                              nQ = nQ,
+                              quantile_values = quantile_values,
+                              verbose = verbose,
+                              plot = plot)
 
     # Get the goal distributions
-    refQuantiles <- matrix(apply(matrix(unlist(quantiles),
-                                        ncol = length(unique(labels))),
-                                 1, mean, na.rm = TRUE),
-                           nrow = nQ,
-                           dimnames = list(c(0,(1:(nQ-1))/(nQ-1)),
-                                           channels))
+    if(is(goal, "character") && goal == "mean"){
+        refQuantiles <- matrix(apply(matrix(unlist(quantiles),
+                                            ncol = length(unique(labels))),
+                                     1, mean, na.rm = TRUE),
+                               nrow = nQ,
+                               dimnames = list(c(0,(1:(nQ-1))/(nQ-1)),
+                                               channels))
+    } else if (is(goal, "numeric")) {
+        if(length(goal) != nQ) { stop("Goal should be 'mean', a batch label",
+                                      " or a numeric vector of length nQ")}
+        refQuantiles <- matrix(goal,
+                               nrow = nQ,
+                               ncol = length(channels),
+                               dimnames = list(quantile_values,
+                                               channels))
+    } else if (goal %in% unique(labels)) {
+        refQuantiles <- quantiles[[goal]]
+    } else {
+        stop("Goal should be 'mean', a batch label",
+             "or a numeric vector of length 2")
+    }
 
     if(plot){
         textPlot("Goal distribution")
         for(channel in channels){
-            graphics::plot(0, type = "n", xlim = c(0, 7),
+            graphics::plot(0, type = "n", xlim = c(0, 8),
                            bty = "n", xaxt = "n", yaxt = "n",
                            xlab = "", ylab = "", main = "")
             graphics::abline(v = refQuantiles[,channel])
@@ -146,63 +326,56 @@ QuantileNorm.train <- function(files,
         if(verbose) message("  ",label)
         if(plot){ textPlot(label) }
         splines[[label]] <- list()
-        if(!is.null(quantiles[[label]]) | any(is.na(quantiles[[label]]))){
+        if(!is.null(quantiles[[label]]) | any(is.na(quantiles[[label]])) | any(is.na(refQuantiles))){
             for(channel in channels){
 
                 refQ <- refQuantiles[, channel]
                 labelQ <- quantiles[[label]][, channel]
 
-                # Remove leading zeros and NA values to avoid computational problems
-
-                leadingZeros <- max(sum(cumsum(refQ)<1e-5,na.rm=TRUE) -1,
-                                    sum(cumsum(labelQ)<1e-5,na.rm=TRUE)-1)
-                if(leadingZeros > 0){
-                    leadingZeros <- seq(leadingZeros)
-                } else {
-                    leadingZeros <- c()
-                }
-                naValues <- which(is.na(labelQ)|is.na(refQ))
-                toRemove <- c(leadingZeros,naValues)
-
-                if(length(toRemove) > 0){
-                    labelQ <- labelQ[-toRemove]
-                    refQ <- refQ[-toRemove]
+                if(!is.null(limit)){
+                    refQ <- c(refQ, limit)
+                    labelQ <- c(labelQ, limit)
                 }
 
-                if(length(labelQ) > 3){
-                    spl <- stats::smooth.spline(labelQ, refQ, spar = spar)
+                if(length(unique(labelQ)) > 1){
+
+                    suppressWarnings(spl <- stats::splinefun(labelQ,
+                                                             refQ,
+                                                             method="monoH.FC"))
                 } else {
-                    spl <- stats::smooth.spline(1:5, 1:5, spar=spar)
-                    warning("Too many zeros or missing values in the quantiles",
-                            " for ", label, " in ", channel)
+                    spl <- identityFunction
+                    warning("Not enough unique quantiles  for ", label, " in ",
+                            channel, ". The identity function will be used.")
                 }
                 splines[[label]][[channel]] <- spl
 
                 if(plot){
-                    graphics::plot(labelQ, refQ, xlim = c(0, 7), ylim = c(0, 7),
+                    graphics::plot(labelQ, refQ, xlim = c(0, 8), ylim = c(0, 8),
                                    pch = 19, bty = "n", xaxt = "n", yaxt = "n",
                                    xlab = "", ylab = "", main = "")
-                    graphics::lines(c(0, 7), c(0, 7), col="#999999")
-                    graphics::lines(seq(0, 7, 0.1),
-                                    stats::predict(splines[[label]][[channel]],
-                                            seq(0, 7, 0.1))$y)
+                    graphics::lines(c(-0.5, 8), c(-0.5, 8), col="#999999")
+                    x <- seq(-0.5, 8, 0.1)
+                    graphics::lines(x,
+                                    splines[[label]][[channel]](x),
+                                    col = "#b30000")
                 }
 
             }
         } else {
+            warning("Not enough cells for ", label,
+                    "\nThe identity function will be used.")
             for(channel in channels){
-                splines[[label]][[channel]] <- stats::splinefun(1:5, 1:5,
-                                                                method="hyman")
+                splines[[label]][[channel]] <- identityFunction
                 if(plot){
-                    graphics::plot(c(0, 7), c(0, 7), col = "#999999", type = "l",
-                                   xlim = c(0, 7), ylim = c(0, 7),
+                    graphics::plot(c(0,8), c(0,8), col = "#999999", type = "l",
+                                   xlim = c(0,8), ylim = c(0,8),
                                    pch = 19, bty = "n", xaxt = "n", yaxt = "n",
                                    xlab = "", ylab = "", main = "")
                 }
             }
         }
     }
-    named.list(channels, splines, quantiles, refQuantiles)
+    named.list(channels, splines, quantiles, quantile_values, refQuantiles)
 }
 
 
@@ -284,9 +457,9 @@ QuantileNorm.normalize <- function(model,
                 # Overwrite the values with the normalized values
                 if (verbose) message("Normalizing ",label)
                 for (channel in channels) {
-                    flowCore::exprs(ff)[, channel] <- stats::predict(
-                        model$splines[[label]][[channel]],
-                        flowCore::exprs(ff[, channel]))$y
+                    flowCore::exprs(ff)[, channel] <-
+                        model$splines[[label]][[channel]](
+                            flowCore::exprs(ff[, channel]))
                 }
 
                 if (!is.null(transformList.reverse)) {

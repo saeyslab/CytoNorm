@@ -7,9 +7,8 @@
 CytoNorm.train(files, labels, channels, transformList,
   outputDir = "./tmp", FlowSOM.params = list(nCells = 1e+06, xdim = 15,
   ydim = 15, nClus = 30, scale = FALSE),
-  normMethod.train = QuantileNorm.train, normParams = list(nQ = 21,
-  spar = 0.5), seed = NULL, clean = TRUE, plot = FALSE,
-  verbose = FALSE)
+  normMethod.train = QuantileNorm.train, normParams = list(nQ = 21),
+  seed = NULL, clean = TRUE, plot = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the control samples.}
