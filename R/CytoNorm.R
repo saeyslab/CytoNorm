@@ -25,6 +25,31 @@
 #'
 #' @examples
 #'
+#' dir <- system.file("extdata", package = "CytoNorm")
+#' files <- list.files(dir, pattern = "fcs$")
+#' data <- data.frame(File = files,
+#'                    Path = file.path(dir, files),
+#'                    Type = stringr::str_match(files, "_([12]).fcs")[,2],
+#'                    Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+#'                    stringsAsFactors = FALSE)
+#' data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+#' train_data <- dplyr::filter(data, Type == "Train")
+#'
+#' ff <- flowCore::read.FCS(data$Path[1])
+#' channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+#' transformList <- flowCore::transformList(channels,
+#'                                          cytofTransform)
+#'
+#' fsom <- prepareFlowSOM(train_data$Path,
+#'                        channels,
+#'                        nCells = 10000, #1000000
+#'                        FlowSOM.params = list(xdim = 15,
+#'                                              ydim = 15,
+#'                                              nClus = 10,
+#'                                              scale = FALSE),
+#'                        transformList = transformList,
+#'                        seed = 1)
+#' FlowSOM::PlotStars(fsom$FlowSOM)
 #'
 #' @importFrom dplyr '%>%' filter
 #' @importFrom flowCore read.FCS transformList colnames
@@ -112,23 +137,59 @@ prepareFlowSOM <- function(files,
 #'
 #' @examples
 #'
+#' dir <- system.file("extdata", package = "CytoNorm")
+#' files <- list.files(dir, pattern = "fcs$")
+#' data <- data.frame(File = files,
+#'                    Path = file.path(dir, files),
+#'                    Type = stringr::str_match(files, "_([12]).fcs")[,2],
+#'                    Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+#'                    stringsAsFactors = FALSE)
+#' data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+#' train_data <- dplyr::filter(data, Type == "Train")
+#' validation_data <- dplyr::filter(data, Type == "Validation")
+#'
+#' ff <- flowCore::read.FCS(data$Path[1])
+#' channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+#' transformList <- flowCore::transformList(channels,
+#'                                          cytofTransform)
+#' transformList.reverse <- flowCore::transformList(channels,
+#'                                                  cytofTransform.reverse)
+#'
+#' model <- CytoNorm.train(files = train_data$Path,
+#'                         labels = train_data$Batch,
+#'                         channels = channels,
+#'                         transformList = transformList,
+#'                         FlowSOM.params = list(nCells = 10000, #1000000
+#'                                               xdim = 15,
+#'                                               ydim = 15,
+#'                                               nClus = 10,
+#'                                               scale = FALSE),
+#'                         normParams = list(nQ = 101),
+#'                         seed = 1)
+#'
+#' CytoNorm.normalize(model = model,
+#'                    files = validation_data$Path,
+#'                    labels = validation_data$Batch,
+#'                    transformList = transformList,
+#'                    transformList.reverse = transformList.reverse)
+#'
 #' @export
 CytoNorm.train <- function(files,
-                            labels,
-                            channels,
-                            transformList,
-                            outputDir = "./tmp",
-                            FlowSOM.params = list(nCells = 1000000,
-                                                  xdim = 15,
-                                                  ydim = 15,
-                                                  nClus = 30,
-                                                  scale = FALSE),
-                            normMethod.train = QuantileNorm.train,
-                            normParams = list(nQ = 21),
-                            seed = NULL,
-                            clean = TRUE,
-                            plot = FALSE,
-                            verbose = FALSE){
+                           labels,
+                           channels,
+                           transformList,
+                           outputDir = "./tmp",
+                           FlowSOM.params = list(nCells = 1000000,
+                                                 xdim = 15,
+                                                 ydim = 15,
+                                                 nClus = 10,
+                                                 scale = FALSE),
+                           normMethod.train = QuantileNorm.train,
+                           normParams = list(nQ = 101),
+                           seed = NULL,
+                           clean = TRUE,
+                           plot = FALSE,
+                           verbose = FALSE){
 
     if (length(labels) != length(files)) {
         stop("Input parameters 'labels' and 'files'",
@@ -177,7 +238,7 @@ CytoNorm.train <- function(files,
 
     # Split files by clusters
     for(file in files){
-        message("Splitting ",file)
+        if(verbose) message("Splitting ",file)
         ff <- flowCore::read.FCS(file)
         if (!is.null(transformList)) {
             ff <- flowCore::transform(ff,transformList)
@@ -195,7 +256,7 @@ CytoNorm.train <- function(files,
                     flowCore::write.FCS(
                         ff[cellClusterIDs == cluster,],
                         file=file.path(outputDir,
-                                       paste0(gsub("/","_",file),
+                                       paste0(gsub("[:/]","_",file),
                                               "_fsom",cluster,".fcs"))))
             }
         }
@@ -204,7 +265,7 @@ CytoNorm.train <- function(files,
     # Learn quantiles for each cluster
     clusterRes <- list()
     for (cluster in unique(fsom$metaclustering)) {
-        message("Processing cluster ",cluster)
+        if(verbose) message("Processing cluster ",cluster)
         if (plot) {
             grDevices::pdf(file.path(outputDir,
                                      paste0("CytoNorm_norm_Cluster",
@@ -215,7 +276,7 @@ CytoNorm.train <- function(files,
 
         normParams_tmp <- c(normParams,
                             list(files = file.path(outputDir,
-                                                   paste0(gsub("/", "_", files),
+                                                   paste0(gsub("[:/]", "_", files),
                                                           "_fsom", cluster, ".fcs")),
                                  labels = as.character(labels),
                                  channels = channels,
@@ -232,7 +293,8 @@ CytoNorm.train <- function(files,
     if(clean){
         for(cluster in unique(fsom$metaclustering)){
             tmp_files <- file.path(outputDir,
-                                   paste0(gsub("/","_",files),"_fsom",cluster,".fcs"))
+                                   paste0(gsub("[:/]", "_", files),
+                                          "_fsom", cluster, ".fcs"))
 
             file.remove(tmp_files[file.exists(tmp_files)])
         }
@@ -272,6 +334,45 @@ CytoNorm.train <- function(files,
 #' @seealso   \code{\link{CytoNorm.train}}
 #'
 #' @examples
+#'
+#'
+#' dir <- system.file("extdata", package = "CytoNorm")
+#' files <- list.files(dir, pattern = "fcs$")
+#' data <- data.frame(File = files,
+#'                    Path = file.path(dir, files),
+#'                    Type = stringr::str_match(files, "_([12]).fcs")[,2],
+#'                    Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+#'                    stringsAsFactors = FALSE)
+#' data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+#' train_data <- dplyr::filter(data, Type == "Train")
+#' validation_data <- dplyr::filter(data, Type == "Validation")
+#'
+#' ff <- flowCore::read.FCS(data$Path[1])
+#' channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+#' transformList <- flowCore::transformList(channels,
+#'                                          cytofTransform)
+#' transformList.reverse <- flowCore::transformList(channels,
+#'                                                  cytofTransform.reverse)
+#'
+#' model <- CytoNorm.train(files = train_data$Path,
+#'                         labels = train_data$Batch,
+#'                         channels = channels,
+#'                         transformList = transformList,
+#'                         FlowSOM.params = list(nCells = 10000, #1000000
+#'                                               xdim = 15,
+#'                                               ydim = 15,
+#'                                               nClus = 10,
+#'                                               scale = FALSE),
+#'                         normParams = list(nQ = 101),
+#'                         seed = 1,
+#'                         verbose = TRUE)
+#'
+#' CytoNorm.normalize(model = model,
+#'                    files = validation_data$Path,
+#'                    labels = validation_data$Batch,
+#'                    transformList = transformList,
+#'                    transformList.reverse = transformList.reverse,
+#'                    verbose = TRUE)
 #'
 #' @export
 CytoNorm.normalize <- function(model,
@@ -325,7 +426,7 @@ CytoNorm.normalize <- function(model,
             if (sum(FlowSOM::GetMetaclusters(fsom_file,
                                              fsom$metaclustering) == cluster) > 0) {
                 f <- file.path(outputDir,
-                               paste0(gsub(".*/","",file),
+                               paste0(gsub("[:/]","_",file),
                                       "_fsom", cluster, ".fcs"))
                 suppressWarnings(
                     flowCore::write.FCS(ff[cellClusterIDs[[file]] == cluster],
@@ -339,8 +440,8 @@ CytoNorm.normalize <- function(model,
     for(cluster in unique(fsom$metaclustering)){
         if(verbose) message("Processing cluster ",cluster)
         files_tmp <- file.path(outputDir,
-                               paste0(gsub(".*/",
-                                           "",
+                               paste0(gsub("[:/]",
+                                           "_",
                                            files),
                                       "_fsom",
                                       cluster,
@@ -365,7 +466,7 @@ CytoNorm.normalize <- function(model,
         ff <- flowCore::read.FCS(file)
         for(cluster in unique(fsom$metaclustering)){
             file_name <- file.path(outputDir,
-                                   paste0("Norm_",gsub(".*/","",file),
+                                   paste0("Norm_",gsub("[:/]","_",file),
                                           "_fsom",cluster,".fcs"))
             if (file.exists(file_name)) {
                 ff_subset <- flowCore::read.FCS(file_name)
@@ -379,14 +480,21 @@ CytoNorm.normalize <- function(model,
             # ff@parameters <- meta[[file]][["parameters_original"]]
         }
 
+
+        # Adapt to real min and max because this gets strange values otherwise
+        ff@parameters@data[,"minRange"] <- apply(ff@exprs, 2, min)
+        ff@parameters@data[,"maxRange"] <- apply(ff@exprs, 2, max)
+        ff@parameters@data[,"range"] <- ff@parameters@data[,"maxRange"] -
+            ff@parameters@data[,"minRange"]
+
         if(clean){
             file.remove(file.path(outputDir,
-                      paste0("Norm_",gsub(".*/","",file),
+                      paste0("Norm_",gsub("[:/]","_",file),
                              "_fsom",unique(fsom$metaclustering),".fcs")))
         }
 
         suppressWarnings(flowCore::write.FCS(ff,
                                              file=file.path(outputDir,
-                                                    paste0(prefix,gsub(".*/","",file)))))
+                                                            paste0(prefix,gsub(".*/","",file)))))
     }
 }

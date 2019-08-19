@@ -6,8 +6,10 @@
 #'                    \code{transform} function
 #' @param nQ          Number of quantiles to compute Default = 101, which
 #'                    results in quantiles for every percent of the data.
-#'                    Ignored if quantile_values is given.
-#' @param quantile_values Vector of length with values between 0 and 1, giving
+#'                    Ignored if quantileValues is given.
+#' @param minCells    Minimum number of cells required to compute trust-worthy
+#'                    quantiles. Otherwise NA is returned. Default = 50.
+#' @param quantileValues Vector of length with values between 0 and 1, giving
 #'                        the percentages at which the quantiles should be
 #'                        computed. If NULL (default), the quantiles will be
 #'                        evenly distributed, including 0 and 1.
@@ -44,7 +46,8 @@
 getQuantiles <- function(files,
                          channels,
                          nQ = 101,
-                         quantile_values = NULL,
+                         minCells = 50,
+                         quantileValues = NULL,
                          transformList = NULL,
                          labels = NULL,
                          selection = NULL,
@@ -58,15 +61,15 @@ getQuantiles <- function(files,
 
     quantiles <- list()
 
-    if (is.null(quantile_values)) {
-        quantile_values <- c(0, (1:(nQ-1))/(nQ-1))
+    if (is.null(quantileValues)) {
+        quantileValues <- c(0, (1:(nQ-1))/(nQ-1))
     } else {
-        nQ <- length(quantile_values)
+        nQ <- length(quantileValues)
     }
 
     for(label in unique(labels)){
         ids <- which(labels == label & file.exists(files))
-        if(verbose) message("  ", label, " (", paste(ids, collapse = "," ), ")")
+        if(verbose) message("  ", label, " (FileID ", paste(ids, collapse = "," ), ")")
 
         # Read the file(s) and transform if necessary
         if (length(ids) > 1) {
@@ -88,12 +91,12 @@ getQuantiles <- function(files,
 
 
         # Compute quantiles for all channels to normalize
-        if (!is.null(ff) && flowCore::nrow(ff) > 50) {
+        if (!is.null(ff) && flowCore::nrow(ff) > minCells) {
             quantiles[[label]] <- apply(flowCore::exprs(ff)[, channels],
                                         2,
                                         function(x){
                                             stats::quantile(x,
-                                                            quantile_values)
+                                                            quantileValues)
                                         })
 
             if(plot){
@@ -113,12 +116,18 @@ getQuantiles <- function(files,
                 }
             }
         } else {
-            message("Less then 50 cells in ", label, ". No quantiles computed.")
+            if(is.null(ff)){
+                message("  Could not find ", paste(files[ids], collapse = ", "))
+            } else {
+                message("  Less then ", minCells, " cells in ", label,
+                        " (", flowCore::nrow(ff), "). No quantiles computed.")
+            }
             quantiles[[label]] <- matrix(NA,
                                          nrow = nQ,
                                          ncol = length(channels),
-                                         dimnames = list(as.character(quantile_values),
-                                                         channels))
+                                         dimnames =
+                                             list(as.character(quantileValues),
+                                                  channels))
             if(plot){
                 textPlot(label)
                 for(channel in channels){
@@ -147,7 +156,7 @@ getQuantiles <- function(files,
 #'                    \code{transform} function
 #' @param nQ          Number of quantiles to use. Default = 101, which results in
 #'                    quantiles for every percent of the data.
-#' @param quantile_values If specified, it should be a vector of length nQ with
+#' @param quantileValues If specified, it should be a vector of length nQ with
 #'                        values between 0 and 1, giving the percentages at
 #'                        which the quantiles should be computed. If NULL
 #'                        (default), the quantiles will be evenly distributed,
@@ -214,7 +223,7 @@ getQuantiles <- function(files,
 #'   channels = channels,
 #'   transformList = transformList,
 #'   nQ = 2,
-#'   quantile_values = c(0.001, 0.999),
+#'   quantileValues = c(0.001, 0.999),
 #'   plot = TRUE)
 #' dev.off()
 #'
@@ -245,7 +254,7 @@ QuantileNorm.train <- function(files,
                                transformList,
                                nQ = 101,
                                limit = NULL,
-                               quantile_values = NULL,
+                               quantileValues = NULL,
                                goal = "mean",
                                verbose = FALSE,
                                plot = FALSE,
@@ -281,7 +290,7 @@ QuantileNorm.train <- function(files,
                               channels = channels,
                               transformList = transformList,
                               nQ = nQ,
-                              quantile_values = quantile_values,
+                              quantileValues = quantileValues,
                               verbose = verbose,
                               plot = plot)
 
@@ -299,7 +308,7 @@ QuantileNorm.train <- function(files,
         refQuantiles <- matrix(goal,
                                nrow = nQ,
                                ncol = length(channels),
-                               dimnames = list(quantile_values,
+                               dimnames = list(quantileValues,
                                                channels))
     } else if (goal %in% unique(labels)) {
         refQuantiles <- quantiles[[goal]]
@@ -326,7 +335,7 @@ QuantileNorm.train <- function(files,
         if(verbose) message("  ",label)
         if(plot){ textPlot(label) }
         splines[[label]] <- list()
-        if(!is.null(quantiles[[label]]) | any(is.na(quantiles[[label]])) | any(is.na(refQuantiles))){
+        if(!is.null(quantiles[[label]]) & !any(is.na(quantiles[[label]])) & !any(is.na(refQuantiles))){
             for(channel in channels){
 
                 refQ <- refQuantiles[, channel]
@@ -375,7 +384,7 @@ QuantileNorm.train <- function(files,
             }
         }
     }
-    named.list(channels, splines, quantiles, quantile_values, refQuantiles)
+    named.list(channels, splines, quantiles, quantileValues, refQuantiles)
 }
 
 

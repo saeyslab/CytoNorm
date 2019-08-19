@@ -246,24 +246,22 @@ testCV <- function(fsom,
 #'    # Describe file names
 #'    dir <- system.file("extdata",package="CytoNorm")
 #'    fileNames <- c("Gates_PTLG021_Unstim_Control_1.fcs",
-#'                    "Gates_PTLG026_Unstim_Control_1.fcs")
-#'    labels <- c("PTLG021","PTLG026")
+#'                    "Gates_PTLG028_Unstim_Control_1.fcs")
+#'    labels <- c("PTLG021","PTLG028")
 #'    ff <- flowCore::read.FCS(file.path(dir,fileNames[1]))
-#'    markersToNormalize <- flowCore::colnames(ff)[c(10, 11, 14, 16:35, 37, 39:51)]
+#'    channelsToNormalize <- flowCore::colnames(ff)[c(10, 11, 14, 16:35, 37, 39:51)]
 #'
 #'    # Build transform list
-#'    transformList <- flowCore::transformList(markersToNormalize,
-#'                                         flowCore::arcsinhTransform(
-#'                                            transformationId="cytofTransform",
-#'                                            a=0,b=(1/5),c=0))
+#'    transformList <- flowCore::transformList(channelsToNormalize,
+#'                                             cytofTransform)
 #'    emdEvaluation(file.path(dir,fileNames),
 #'                  transformList,
-#'                  markersToNormalize)
+#'                  channelsToNormalize)
 #'
 #' @export
 emdEvaluation <- function(files,
                           transformList,
-                          markers,
+                          channels,
                           manual = NULL,
                           binSize = 0.1,
                           return_all = FALSE){
@@ -290,7 +288,7 @@ emdEvaluation <- function(files,
             }
             distr[[file]][[cellType]] <-
                 apply(flowCore::exprs(ff)[selection,
-                                          markers],
+                                          channels],
                       2,
                       function(x){
                           graphics::hist(x,
@@ -304,7 +302,7 @@ emdEvaluation <- function(files,
     distances <- list()
     for(cellType in cellTypes){
         distances[[cellType]] <- list()
-        for(marker in markers){
+        for(marker in channels){
             distances[[cellType]][[marker]] <- matrix(NA,
                                                       nrow=length(files),
                                                       ncol=length(files),
@@ -326,12 +324,12 @@ emdEvaluation <- function(files,
 
     comparison <- matrix(NA,
                          nrow=length(cellTypes),
-                         ncol=length(markers),
-                         dimnames = list(cellTypes, markers))
+                         ncol=length(channels),
+                         dimnames = list(cellTypes, channels))
 
     for(cellType in cellTypes){
-        for(marker in markers){
-            comparison[cellType,marker] <- max(distances[[cellType]][[marker]],
+        for(channel in channels){
+            comparison[cellType, channel] <- max(distances[[cellType]][[channel]],
                                                na.rm = TRUE)
         }
     }
