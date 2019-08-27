@@ -4,7 +4,7 @@
 \alias{emdEvaluation}
 \title{emdEvaluation}
 \usage{
-emdEvaluation(files, transformList, markers, manual = NULL,
+emdEvaluation(files, transformList, channels, manual = NULL,
   binSize = 0.1, return_all = FALSE)
 }
 \arguments{
@@ -13,7 +13,7 @@ emdEvaluation(files, transformList, markers, manual = NULL,
 \item{transformList}{Transformation list to pass to the flowCore
 \code{transform} function}
 
-\item{markers}{Markers to evaluate (corresponding with the column
+\item{channels}{Channels to evaluate (corresponding with the column
 names of the flow frame)}
 
 \item{manual}{A list which contains for every file a factor array. These
@@ -39,18 +39,16 @@ for all markers and cellTypes.
    # Describe file names
    dir <- system.file("extdata",package="CytoNorm")
    fileNames <- c("Gates_PTLG021_Unstim_Control_1.fcs",
-                   "Gates_PTLG026_Unstim_Control_1.fcs")
-   labels <- c("PTLG021","PTLG026")
+                   "Gates_PTLG028_Unstim_Control_1.fcs")
+   labels <- c("PTLG021","PTLG028")
    ff <- flowCore::read.FCS(file.path(dir,fileNames[1]))
-   markersToNormalize <- flowCore::colnames(ff)[c(10, 11, 14, 16:35, 37, 39:51)]
+   channelsToNormalize <- flowCore::colnames(ff)[c(10, 11, 14, 16:35, 37, 39:51)]
 
    # Build transform list
-   transformList <- flowCore::transformList(markersToNormalize,
-                                        flowCore::arcsinhTransform(
-                                           transformationId="cytofTransform",
-                                           a=0,b=(1/5),c=0))
+   transformList <- flowCore::transformList(channelsToNormalize,
+                                            cytofTransform)
    emdEvaluation(file.path(dir,fileNames),
                  transformList,
-                 markersToNormalize)
+                 channelsToNormalize)
 
 }

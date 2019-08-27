@@ -6,8 +6,8 @@
 \usage{
 CytoNorm.train(files, labels, channels, transformList,
   outputDir = "./tmp", FlowSOM.params = list(nCells = 1e+06, xdim = 15,
-  ydim = 15, nClus = 30, scale = FALSE),
-  normMethod.train = QuantileNorm.train, normParams = list(nQ = 21),
+  ydim = 15, nClus = 10, scale = FALSE),
+  normMethod.train = QuantileNorm.train, normParams = list(nQ = 101),
   seed = NULL, clean = TRUE, plot = FALSE, verbose = FALSE)
 }
 \arguments{
@@ -65,6 +65,42 @@ Temporary fcs files splitting the data into clusters are written to
 \code{clean}).
 }
 \examples{
+
+dir <- system.file("extdata", package = "CytoNorm")
+files <- list.files(dir, pattern = "fcs$")
+data <- data.frame(File = files,
+                   Path = file.path(dir, files),
+                   Type = stringr::str_match(files, "_([12]).fcs")[,2],
+                   Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+                   stringsAsFactors = FALSE)
+data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+train_data <- dplyr::filter(data, Type == "Train")
+validation_data <- dplyr::filter(data, Type == "Validation")
+
+ff <- flowCore::read.FCS(data$Path[1])
+channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+transformList <- flowCore::transformList(channels,
+                                         cytofTransform)
+transformList.reverse <- flowCore::transformList(channels,
+                                                 cytofTransform.reverse)
+
+model <- CytoNorm.train(files = train_data$Path,
+                        labels = train_data$Batch,
+                        channels = channels,
+                        transformList = transformList,
+                        FlowSOM.params = list(nCells = 10000, #1000000
+                                              xdim = 15,
+                                              ydim = 15,
+                                              nClus = 10,
+                                              scale = FALSE),
+                        normParams = list(nQ = 101),
+                        seed = 1)
+
+CytoNorm.normalize(model = model,
+                   files = validation_data$Path,
+                   labels = validation_data$Batch,
+                   transformList = transformList,
+                   transformList.reverse = transformList.reverse)
 
 }
 \seealso{

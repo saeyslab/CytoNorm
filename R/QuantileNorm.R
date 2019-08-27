@@ -161,6 +161,8 @@ getQuantiles <- function(files,
 #'                        which the quantiles should be computed. If NULL
 #'                        (default), the quantiles will be evenly distributed,
 #'                        including 0 and 1.
+#' @param limit       These values will be modelled to map onto themselves by the
+#'                    spline
 #' @param goal        Goal distribution. Default "mean", can also be nQ numeric
 #'                    values or one of the batch labels.
 #' @param plot        If TRUE, a plot is generated (using the \code{layout}
@@ -245,6 +247,7 @@ getQuantiles <- function(files,
 #'   labels = train_data$Batch,
 #'   channels = channels,
 #'   transformList = transformList,
+#'   nQ = 21,
 #'   goal = seq(0, 1, by = 0.05))
 #'
 #' @export
@@ -302,19 +305,26 @@ QuantileNorm.train <- function(files,
                                nrow = nQ,
                                dimnames = list(c(0,(1:(nQ-1))/(nQ-1)),
                                                channels))
-    } else if (is(goal, "numeric")) {
-        if(length(goal) != nQ) { stop("Goal should be 'mean', a batch label",
-                                      " or a numeric vector of length nQ")}
-        refQuantiles <- matrix(goal,
-                               nrow = nQ,
-                               ncol = length(channels),
-                               dimnames = list(quantileValues,
-                                               channels))
+    } else if (methods::is(goal, "numeric")) {
+        if(length(goal) == nQ){
+            refQuantiles <- matrix(goal,
+                                   nrow = nQ,
+                                   ncol = length(channels),
+                                   dimnames = list(quantileValues,
+                                                   channels))
+        } else if ((nrow(goal) == nQ) & (ncol(goal) == length(channels))){
+            refQuantiles <- goal
+        } else {
+            stop("Goal should be 'mean', a batch label",
+                   "a numeric vector of length nQ, or a matrix with nQ rows
+                   and length(channels) columns.")
+        }
     } else if (goal %in% unique(labels)) {
         refQuantiles <- quantiles[[goal]]
     } else {
         stop("Goal should be 'mean', a batch label",
-             "or a numeric vector of length 2")
+             "a numeric vector of length nQ, or a matrix with nQ rows
+             and length(channels) columns.")
     }
 
     if(plot){

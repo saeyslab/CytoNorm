@@ -12,6 +12,8 @@ getDensities(files, channels, quantileValues = 0.5,
 
 \item{channels}{Names of the channels to compute the densities for}
 
+\item{quantileValues}{Quantiles to extract as well}
+
 \item{transformList}{Transformation list to pass to the flowCore
 \code{transform} function}
 
@@ -42,6 +44,7 @@ densities$densities$Marker <- paste0(
   FlowSOM::get_markers(ff, densities$densities$Channel),
   " (", densities$densities$Channel, ")")
 
+library(ggplot2)
 ggplot(dplyr::filter(densities$densities,
                      File == file.path(dir, files[1]))) +
   geom_line(aes(x = x, y = y)) +

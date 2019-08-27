@@ -5,7 +5,7 @@
 \title{QuantileNorm.train}
 \usage{
 QuantileNorm.train(files, labels, channels, transformList, nQ = 101,
-  limit = NULL, quantile_values = NULL, goal = "mean",
+  limit = NULL, quantileValues = NULL, goal = "mean",
   verbose = FALSE, plot = FALSE, plotTitle = "Quantiles")
 }
 \arguments{
@@ -22,7 +22,10 @@ belongs, e.g. the plate ID.}
 \item{nQ}{Number of quantiles to use. Default = 101, which results in
 quantiles for every percent of the data.}
 
-\item{quantile_values}{If specified, it should be a vector of length nQ with
+\item{limit}{These values will be modelled to map onto themselves by the
+spline}
+
+\item{quantileValues}{If specified, it should be a vector of length nQ with
 values between 0 and 1, giving the percentages at
 which the quantiles should be computed. If NULL
 (default), the quantiles will be evenly distributed,
@@ -100,7 +103,7 @@ model_nQ_2 <- QuantileNorm.train(
   channels = channels,
   transformList = transformList,
   nQ = 2,
-  quantile_values = c(0.001, 0.999),
+  quantileValues = c(0.001, 0.999),
   plot = TRUE)
 dev.off()
 
@@ -122,6 +125,7 @@ model_goal_fixed <- QuantileNorm.train(
   labels = train_data$Batch,
   channels = channels,
   transformList = transformList,
+  nQ = 21,
   goal = seq(0, 1, by = 0.05))
 
 }

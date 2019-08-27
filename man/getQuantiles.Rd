@@ -4,9 +4,9 @@
 \alias{getQuantiles}
 \title{getQuantiles}
 \usage{
-getQuantiles(files, channels, nQ = 101, quantile_values = NULL,
-  transformList = NULL, labels = NULL, selection = NULL,
-  verbose = FALSE, plot = FALSE)
+getQuantiles(files, channels, nQ = 101, minCells = 50,
+  quantileValues = NULL, transformList = NULL, labels = NULL,
+  selection = NULL, verbose = FALSE, plot = FALSE)
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the samples}
@@ -15,9 +15,12 @@ getQuantiles(files, channels, nQ = 101, quantile_values = NULL,
 
 \item{nQ}{Number of quantiles to compute Default = 101, which
 results in quantiles for every percent of the data.
-Ignored if quantile_values is given.}
+Ignored if quantileValues is given.}
 
-\item{quantile_values}{Vector of length with values between 0 and 1, giving
+\item{minCells}{Minimum number of cells required to compute trust-worthy
+quantiles. Otherwise NA is returned. Default = 50.}
+
+\item{quantileValues}{Vector of length with values between 0 and 1, giving
 the percentages at which the quantiles should be
 computed. If NULL (default), the quantiles will be
 evenly distributed, including 0 and 1.}

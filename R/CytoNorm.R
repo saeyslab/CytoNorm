@@ -54,6 +54,10 @@
 #' @importFrom dplyr '%>%' filter
 #' @importFrom flowCore read.FCS transformList colnames
 #' @importFrom stringr str_match
+#' @importFrom pheatmap pheatmap
+#' @importFrom methods is
+#' @importFrom stats density
+#' @importFrom utils capture.output
 #'
 #' @export
 prepareFlowSOM <- function(files,
@@ -284,6 +288,9 @@ CytoNorm.train <- function(files,
                                  verbose = verbose,
                                  plot = plot))
         normParams_tmp <- normParams_tmp[unique(names(normParams_tmp))]
+        if(is.list(normParams["goal"])){
+            normParams_tmp["goal"] <- normParams["goal"][[cluster]]
+        }
         clusterRes[[cluster]] <- do.call(normMethod.train,
                                          normParams_tmp)
 

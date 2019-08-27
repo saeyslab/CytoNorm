@@ -43,5 +43,30 @@ the wrapper function \code{\link{CytoNorm.train}} instead.
 }
 \examples{
 
+dir <- system.file("extdata", package = "CytoNorm")
+files <- list.files(dir, pattern = "fcs$")
+data <- data.frame(File = files,
+                   Path = file.path(dir, files),
+                   Type = stringr::str_match(files, "_([12]).fcs")[,2],
+                   Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+                   stringsAsFactors = FALSE)
+data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+train_data <- dplyr::filter(data, Type == "Train")
+
+ff <- flowCore::read.FCS(data$Path[1])
+channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+transformList <- flowCore::transformList(channels,
+                                         cytofTransform)
+
+fsom <- prepareFlowSOM(train_data$Path,
+                       channels,
+                       nCells = 10000, #1000000
+                       FlowSOM.params = list(xdim = 15,
+                                             ydim = 15,
+                                             nClus = 10,
+                                             scale = FALSE),
+                       transformList = transformList,
+                       seed = 1)
+FlowSOM::PlotStars(fsom$FlowSOM)
 
 }
