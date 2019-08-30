@@ -55,9 +55,9 @@
 #' @importFrom flowCore read.FCS transformList colnames
 #' @importFrom stringr str_match
 #' @importFrom pheatmap pheatmap
-#' @importFrom methods is
 #' @importFrom stats density
 #' @importFrom utils capture.output
+#' @importFrom gridExtra grid.arrange
 #'
 #' @export
 prepareFlowSOM <- function(files,

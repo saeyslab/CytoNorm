@@ -298,14 +298,14 @@ QuantileNorm.train <- function(files,
                               plot = plot)
 
     # Get the goal distributions
-    if(is(goal, "character") && goal == "mean"){
+    if(is.character(goal) && goal == "mean"){
         refQuantiles <- matrix(apply(matrix(unlist(quantiles),
                                             ncol = length(unique(labels))),
                                      1, mean, na.rm = TRUE),
                                nrow = nQ,
                                dimnames = list(c(0,(1:(nQ-1))/(nQ-1)),
                                                channels))
-    } else if (methods::is(goal, "numeric")) {
+    } else if (is.numeric(goal)) {
         if(length(goal) == nQ){
             refQuantiles <- matrix(goal,
                                    nrow = nQ,

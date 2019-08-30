@@ -154,15 +154,15 @@ testCV <- function(fsom,
     cluster_labels <- FlowSOM::GetClusters(fsom)
 
     # Determine metacluster labels
-    meta <- list()
+    meta_cl <- list()
     for(mc in cluster_values){
         if(verbose) message("Computing ", mc, " metaclusters")
-        meta[[as.character(mc)]] <-
+        meta_cl[[as.character(mc)]] <-
             FlowSOM::metaClustering_consensus(fsom$FlowSOM$map$codes,
                                               mc,
                                               seed = 1)
     }
-    meta[[as.character(nClus)]] <- seq_len(nClus)
+    meta_cl[[as.character(nClus)]] <- seq_len(nClus)
 
     # Percentages assigned to each of the clusters per file
     pctgs <- list()
@@ -173,7 +173,7 @@ testCV <- function(fsom,
                          dimnames = list(unique(fsom$FlowSOM$data[,"File"]),
                                          as.character(seq_len(as.numeric(mc)))))
         tmp <- table(fsom$FlowSOM$data[,"File"],
-                     meta[[mc]][cluster_labels])
+                     meta_cl[[mc]][cluster_labels])
         counts[rownames(tmp), colnames(tmp)] <- tmp
         pctgs[[mc]] <- t(apply(counts, 1,
                                function(x){ 100 * x/sum(x) }))
@@ -186,43 +186,64 @@ testCV <- function(fsom,
                            2,
                            function(x){ stats::sd(x) / mean(x)})
     }
-
+    res <- named.list(pctgs, cvs, meta_cl)
     if(plot){
-        width <- max(cluster_values)
-        chosen <- which(cluster_values == length(levels(fsom$metaclustering)))
-        cv_matrix <- do.call(rbind,
-                             lapply(cvs[as.character(cluster_values)],
-                                    function (x) {
-                                        c(x,
-                                          rep(NA,
-                                              (width - length(x))))
-                                    }))
-        cv_matrix <- rbind(cv_matrix,
-                           matrix(c(cvs[[as.character(nClus)]],
-                                    rep(NA, (width - (nClus %% width)))),
-                                  ncol = width,
-                                  byrow = TRUE))
-        rownames(cv_matrix)[length(cluster_values) + 1] <- "Original\nclustering"
-        colnames(cv_matrix) <- NULL
-
-        disp <- apply(cv_matrix, 2, function(x) as.character(round(x, 2)))
-        disp[cv_matrix < 1.5] <- ""
-        disp[is.na(cv_matrix)] <- ""
-
-        pheatmap::pheatmap(cv_matrix,
-                           cluster_cols = FALSE,
-                           cluster_rows = FALSE,
-                           na_col = "white",
-                           border_color = "white",
-                           gaps_row = c(chosen-1, chosen,
-                                        length(cluster_values)),
-                           breaks = seq(0, 2.5, length.out = 100),
-                           display_numbers = disp)
+        PlotOverviewCV(fsom, res)
     }
 
-    return(named.list(pctgs, cvs))
+    return(res)
 }
 
+#' @export
+PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
+    cvs <- cv_res$cvs
+    pctgs <- cv_res$pctgs
+    nMetaClus <- length(levels(fsom$metaclustering))
+    nClus <- fsom$FlowSOM$map$nNodes
+
+    cluster_values <- as.numeric(names(cvs))
+    width <- max(cluster_values)
+    chosen <- which(cluster_values == nMetaClus)
+    cv_matrix <- do.call(rbind,
+                         lapply(cvs[as.character(cluster_values)],
+                                function (x) {
+                                    c(x,
+                                      rep(NA,
+                                          (width - length(x))))
+                                }))
+    cv_matrix <- rbind(cv_matrix,
+                       matrix(c(cvs[[as.character(nClus)]],
+                                rep(NA, (width - (nClus %% width)))),
+                              ncol = width,
+                              byrow = TRUE))
+    rownames(cv_matrix)[length(cluster_values) + 1] <- "Original\nclustering"
+    colnames(cv_matrix) <- NULL
+
+    disp <- apply(cv_matrix, 2, function(x) as.character(round(x, 2)))
+    disp[cv_matrix < show_cv] <- ""
+    disp[is.na(cv_matrix)] <- ""
+
+    p_cvs <- pheatmap::pheatmap(cv_matrix,
+                                cluster_cols = FALSE,
+                                cluster_rows = FALSE,
+                                na_col = "white",
+                                border_color = "white",
+                                gaps_row = c(chosen-1, chosen,
+                                             length(cluster_values)),
+                                breaks = seq(0, max_cv, length.out = 100),
+                                display_numbers = disp)
+
+    p_pctgs_selected <- pheatmap::pheatmap(pctgs[[as.character(nMetaClus)]],
+                                           cluster_cols = FALSE,
+                                           cluster_rows = FALSE,
+                                           na_col = "white",
+                                           border_color = "white",
+                                           display_numbers = round(pctgs[[as.character(nMetaClus)]],2),
+                                           #number_color = "white",
+                                           scale = "column")
+
+    gridExtra::grid.arrange(p_cvs[[4]], p_pctgs_selected[[4]])
+}
 
 #' emdEvaluation
 #'

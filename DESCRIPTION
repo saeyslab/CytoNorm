@@ -21,7 +21,8 @@ Imports:
     CytoML,
     flowWorkspace,
     ggplot2,
-    methods
+    methods,
+    gridExtra
 Suggests:
     BiocStyle
 License: GPL (>= 2)
