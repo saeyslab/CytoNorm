@@ -289,7 +289,7 @@ CytoNorm.train <- function(files,
                                  plot = plot))
         normParams_tmp <- normParams_tmp[unique(names(normParams_tmp))]
         if(is.list(normParams["goal"])){
-            normParams_tmp["goal"] <- normParams["goal"][[cluster]]
+            normParams_tmp[["goal"]] <- normParams[["goal"]][[cluster]]
         }
         clusterRes[[cluster]] <- do.call(normMethod.train,
                                          normParams_tmp)
