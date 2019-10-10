@@ -201,8 +201,8 @@ PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
     nMetaClus <- length(levels(fsom$metaclustering))
     nClus <- fsom$FlowSOM$map$nNodes
 
-    cluster_values <- as.numeric(names(cvs))
-    width <- max(cluster_values)
+    cluster_values <- as.numeric(names(cvs))[-length(cvs)]
+    width <- nMetaClus
     chosen <- which(cluster_values == nMetaClus)
     cv_matrix <- do.call(rbind,
                          lapply(cvs[as.character(cluster_values)],
