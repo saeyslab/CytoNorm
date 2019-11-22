@@ -1,7 +1,7 @@
 Package: CytoNorm
 Type: Package
 Title: Normalisation of cytometry data measured across multiple batches
-Version: 0.0.4
+Version: 0.0.5
 Authors@R: person("Sofie", "Van Gassen", email = "sofie.vangassen@ugent.be", 
                   role = c("aut", "cre"))
 Description: This package can be used to normalize cytometry samples when 
