@@ -4,9 +4,19 @@
 \alias{QuantileNorm.train}
 \title{QuantileNorm.train}
 \usage{
-QuantileNorm.train(files, labels, channels, transformList, nQ = 101,
-  limit = NULL, quantileValues = NULL, goal = "mean",
-  verbose = FALSE, plot = FALSE, plotTitle = "Quantiles")
+QuantileNorm.train(
+  files,
+  labels,
+  channels,
+  transformList,
+  nQ = 101,
+  limit = NULL,
+  quantileValues = NULL,
+  goal = "mean",
+  verbose = FALSE,
+  plot = FALSE,
+  plotTitle = "Quantiles"
+)
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the control samples}

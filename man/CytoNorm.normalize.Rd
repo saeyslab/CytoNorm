@@ -4,10 +4,18 @@
 \alias{CytoNorm.normalize}
 \title{normalizeClustered}
 \usage{
-CytoNorm.normalize(model, files, labels, transformList,
-  transformList.reverse, outputDir = ".", prefix = "Norm_",
-  clean = TRUE, verbose = FALSE,
-  normMethod.normalize = QuantileNorm.normalize)
+CytoNorm.normalize(
+  model,
+  files,
+  labels,
+  transformList,
+  transformList.reverse,
+  outputDir = ".",
+  prefix = "Norm_",
+  clean = TRUE,
+  verbose = FALSE,
+  normMethod.normalize = QuantileNorm.normalize
+)
 }
 \arguments{
 \item{model}{Model of the batch effercts, as computed by

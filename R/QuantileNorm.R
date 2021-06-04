@@ -73,7 +73,9 @@ getQuantiles <- function(files,
 
         # Read the file(s) and transform if necessary
         if (length(ids) > 1) {
-            ff <- FlowSOM::AggregateFlowFrames(files[ids], 1e12, keepOrder = TRUE)
+            ff <- FlowSOM::AggregateFlowFrames(files[ids], 1e12,
+                                               keepOrder = TRUE,
+                                               channels = channels)
         } else if(length(ids) == 1) {
             o <- capture.output(ff <- flowCore::read.FCS(files[ids]))
             if (verbose) message(o)
@@ -92,7 +94,7 @@ getQuantiles <- function(files,
 
         # Compute quantiles for all channels to normalize
         if (!is.null(ff) && flowCore::nrow(ff) > minCells) {
-            quantiles[[label]] <- apply(flowCore::exprs(ff)[, channels],
+            quantiles[[label]] <- apply(flowCore::exprs(ff)[, channels, drop = FALSE],
                                         2,
                                         function(x){
                                             stats::quantile(x,
@@ -315,14 +317,14 @@ QuantileNorm.train <- function(files,
         } else if ((nrow(goal) == nQ) & (ncol(goal) == length(channels))){
             refQuantiles <- goal
         } else {
-            stop("Goal should be 'mean', a batch label",
+            stop("Goal should be 'mean', a batch label, ",
                    "a numeric vector of length nQ, or a matrix with nQ rows
                    and length(channels) columns.")
         }
     } else if (goal %in% unique(labels)) {
         refQuantiles <- quantiles[[goal]]
     } else {
-        stop("Goal should be 'mean', a batch label",
+        stop("Goal should be 'mean', a batch label, ",
              "a numeric vector of length nQ, or a matrix with nQ rows
              and length(channels) columns.")
     }
@@ -426,6 +428,37 @@ QuantileNorm.train <- function(files,
 #'
 #' @examples
 #'
+#'
+#' dir <- system.file("extdata", package = "CytoNorm")
+#' files <- list.files(dir, pattern = "fcs$")
+#' data <- data.frame(File = files,
+#'                    Path = file.path(dir, files),
+#'                    Type = stringr::str_match(files, "_([12]).fcs")[,2],
+#'                    Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+#'                    stringsAsFactors = FALSE)
+#' data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+#' train_data <- dplyr::filter(data, Type == "Train")
+#' validation_data <- dplyr::filter(data, Type == "Validation")
+#'
+#' ff <- flowCore::read.FCS(data$Path[1])
+#' channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+#' transformList <- flowCore::transformList(channels,
+#'                                          cytofTransform)
+#' transformList.reverse <- flowCore::transformList(channels,
+#'                                                  cytofTransform.reverse)
+#'
+#' model_nQ_101 <- QuantileNorm.train(
+#'   files = train_data$Path,
+#'   labels = train_data$Batch,
+#'   channels = channels,
+#'   transformList = transformList,
+#'   nQ = 101)
+#'
+#' QuantileNorm.normalize(model_nQ_101,
+#'                        validation_data$Path,
+#'                        validation_data$Batch,
+#'                        transformList = transformList,
+#'                        transformList.reverse = transformList.reverse)
 #' @export
 QuantileNorm.normalize <- function(model,
                                    files,

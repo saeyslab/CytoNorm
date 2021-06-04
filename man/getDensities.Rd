@@ -4,8 +4,14 @@
 \alias{getDensities}
 \title{getDensities}
 \usage{
-getDensities(files, channels, quantileValues = 0.5,
-  transformList = NULL, selection = NULL, ...)
+getDensities(
+  files,
+  channels,
+  quantileValues = 0.5,
+  transformList = NULL,
+  selection = NULL,
+  ...
+)
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the samples}

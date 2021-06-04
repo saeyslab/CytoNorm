@@ -4,9 +4,18 @@
 \alias{getQuantiles}
 \title{getQuantiles}
 \usage{
-getQuantiles(files, channels, nQ = 101, minCells = 50,
-  quantileValues = NULL, transformList = NULL, labels = NULL,
-  selection = NULL, verbose = FALSE, plot = FALSE)
+getQuantiles(
+  files,
+  channels,
+  nQ = 101,
+  minCells = 50,
+  quantileValues = NULL,
+  transformList = NULL,
+  labels = NULL,
+  selection = NULL,
+  verbose = FALSE,
+  plot = FALSE
+)
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the samples}

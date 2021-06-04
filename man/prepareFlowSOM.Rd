@@ -4,9 +4,16 @@
 \alias{prepareFlowSOM}
 \title{prepareFlowSOM}
 \usage{
-prepareFlowSOM(files, colsToUse, nCells = 1e+06,
+prepareFlowSOM(
+  files,
+  colsToUse,
+  nCells = 1e+06,
   FlowSOM.params = list(xdim = 15, ydim = 15, nClus = 30, scale = FALSE),
-  transformList = NULL, plot = FALSE, verbose = FALSE, seed = NULL)
+  transformList = NULL,
+  plot = FALSE,
+  verbose = FALSE,
+  seed = NULL
+)
 }
 \arguments{
 \item{files}{Files to use (with path)}
@@ -67,6 +74,6 @@ fsom <- prepareFlowSOM(train_data$Path,
                                              scale = FALSE),
                        transformList = transformList,
                        seed = 1)
-FlowSOM::PlotStars(fsom$FlowSOM)
+FlowSOM::PlotStars(fsom)
 
 }

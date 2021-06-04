@@ -4,8 +4,14 @@
 \alias{emdEvaluation}
 \title{emdEvaluation}
 \usage{
-emdEvaluation(files, transformList, channels, manual = NULL,
-  binSize = 0.1, return_all = FALSE)
+emdEvaluation(
+  files,
+  transformList,
+  channels,
+  manual = NULL,
+  binSize = 0.1,
+  return_all = FALSE
+)
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the control samples.}

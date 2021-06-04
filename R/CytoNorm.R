@@ -16,7 +16,6 @@
 #'                       scale = FALSE)}.
 #' @param transformList Transformation list to pass to the flowCore
 #'                      \code{transform} function. Default = NULL.
-#' @param plot      If TRUE, the FlowSOM tree is plotted. Default = FALSE.
 #' @param verbose   If TRUE, extra output is printed while running.
 #' @param seed      If not NULL, set.seed is called with this argument for
 #'                  reproducable results. Default = NULL.
@@ -49,7 +48,7 @@
 #'                                              scale = FALSE),
 #'                        transformList = transformList,
 #'                        seed = 1)
-#' FlowSOM::PlotStars(fsom$FlowSOM)
+#' FlowSOM::PlotStars(fsom)
 #'
 #' @importFrom dplyr '%>%' filter
 #' @importFrom flowCore read.FCS transformList colnames
@@ -68,14 +67,14 @@ prepareFlowSOM <- function(files,
                                                  nClus = 30,
                                                  scale = FALSE),
                            transformList = NULL,
-                           plot = FALSE,
                            verbose = FALSE,
                            seed = NULL){
 
     if (verbose) message("Aggregating files ... ")
 
     if(!is.null(seed)) set.seed(seed)
-    o <- capture.output( ff <- FlowSOM::AggregateFlowFrames(files, nCells))
+    o <- capture.output( ff <- FlowSOM::AggregateFlowFrames(files, nCells,
+                                                            channels = colsToUse))
     if(!is.null(transformList)) ff <- flowCore::transform(ff, transformList)
 
     FlowSOM.params <- c(FlowSOM.params,
@@ -86,12 +85,6 @@ prepareFlowSOM <- function(files,
 
     if (verbose) message("Running the FlowSOM algorithm ... ")
     fsom <- do.call(FlowSOM::FlowSOM, FlowSOM.params)
-
-    if (plot) {
-        # Plot result
-        FlowSOM::PlotStars(fsom$FlowSOM,
-                           backgroundValues = fsom$metaclustering)
-    }
 
     fsom
 }
@@ -164,8 +157,8 @@ prepareFlowSOM <- function(files,
 #'                         channels = channels,
 #'                         transformList = transformList,
 #'                         FlowSOM.params = list(nCells = 10000, #1000000
-#'                                               xdim = 15,
-#'                                               ydim = 15,
+#'                                               xdim = 10,
+#'                                               ydim = 10,
 #'                                               nClus = 10,
 #'                                               scale = FALSE),
 #'                         normParams = list(nQ = 101),
@@ -207,12 +200,6 @@ CytoNorm.train <- function(files,
     }
 
     if(!file.exists(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))){
-        # Compute clustering
-        if (plot) {
-            grDevices::pdf(file.path(outputDir, "CytoNorm_FlowSOM.pdf"),
-                           height=15, width=20)
-        }
-
 
         nCells <- FlowSOM.params[["nCells"]]
         if(is.null(FlowSOM.params[["channels"]])){
@@ -228,12 +215,13 @@ CytoNorm.train <- function(files,
                                FlowSOM.params = FlowSOM.params,
                                transformList = transformList,
                                colsToUse = FlowSOM.channels,
-                               plot = plot,
                                seed = seed)
 
+        saveRDS(fsom, file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
+
         if (plot) {
-            grDevices::dev.off()
-            saveRDS(fsom, file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
+            FlowSOM::FlowSOMmary(fsom,
+                                 plotFile = file.path(outputDir, "CytoNorm_FlowSOM.pdf"))
         }
     } else {
         fsom <- readRDS(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
@@ -249,13 +237,12 @@ CytoNorm.train <- function(files,
         }
 
         # Map the file to the FlowSOM clustering
-        fsom_file <- FlowSOM::NewData(fsom$FlowSOM, ff)
+        fsom_file <- FlowSOM::NewData(fsom, ff)
 
         # Get the metacluster label for every cell
-        cellClusterIDs <- fsom$metaclustering[fsom_file$map$mapping[,1]]
+        cellClusterIDs <- FlowSOM::GetMetaclusters(fsom_file) #fsom$metaclustering[GetClusters(fsom_file)]
         for (cluster in unique(fsom$metaclustering)) {
-            if (sum(FlowSOM::GetMetaclusters(fsom_file,
-                                             fsom$metaclustering) == cluster) > 0) {
+            if (sum(cellClusterIDs == cluster) > 0) {
                 suppressWarnings(
                     flowCore::write.FCS(
                         ff[cellClusterIDs == cluster,],
@@ -425,13 +412,12 @@ CytoNorm.normalize <- function(model,
             # meta[[file]][["parameters_original"]] <- ff@parameters
         }
 
-        fsom_file <- FlowSOM::NewData(fsom$FlowSOM,ff)
+        fsom_file <- FlowSOM::NewData(fsom,ff)
 
-        cellClusterIDs[[file]] <- fsom$metaclustering[fsom_file$map$mapping[,1]]
+        cellClusterIDs[[file]] <- FlowSOM::GetMetaclusters(fsom_file)
 
         for(cluster in unique(fsom$metaclustering)){
-            if (sum(FlowSOM::GetMetaclusters(fsom_file,
-                                             fsom$metaclustering) == cluster) > 0) {
+            if (sum(cellClusterIDs[[file]] == cluster) > 0) {
                 f <- file.path(outputDir,
                                paste0(gsub("[:/]","_",file),
                                       "_fsom", cluster, ".fcs"))

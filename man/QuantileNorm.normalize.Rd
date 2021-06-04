@@ -4,9 +4,17 @@
 \alias{QuantileNorm.normalize}
 \title{QuantileNorm.normalize}
 \usage{
-QuantileNorm.normalize(model, files, labels, transformList,
-  transformList.reverse, outputDir = ".", prefix = "Norm_",
-  removeOriginal = FALSE, verbose = FALSE)
+QuantileNorm.normalize(
+  model,
+  files,
+  labels,
+  transformList,
+  transformList.reverse,
+  outputDir = ".",
+  prefix = "Norm_",
+  removeOriginal = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{model}{Model of the batch effercts, as computed by
@@ -44,6 +52,37 @@ files are written to the given output directory.
 }
 \examples{
 
+
+dir <- system.file("extdata", package = "CytoNorm")
+files <- list.files(dir, pattern = "fcs$")
+data <- data.frame(File = files,
+                   Path = file.path(dir, files),
+                   Type = stringr::str_match(files, "_([12]).fcs")[,2],
+                   Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+                   stringsAsFactors = FALSE)
+data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+train_data <- dplyr::filter(data, Type == "Train")
+validation_data <- dplyr::filter(data, Type == "Validation")
+
+ff <- flowCore::read.FCS(data$Path[1])
+channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+transformList <- flowCore::transformList(channels,
+                                         cytofTransform)
+transformList.reverse <- flowCore::transformList(channels,
+                                                 cytofTransform.reverse)
+
+model_nQ_101 <- QuantileNorm.train(
+  files = train_data$Path,
+  labels = train_data$Batch,
+  channels = channels,
+  transformList = transformList,
+  nQ = 101)
+
+QuantileNorm.normalize(model_nQ_101,
+                       validation_data$Path,
+                       validation_data$Batch,
+                       transformList = transformList,
+                       transformList.reverse = transformList.reverse)
 }
 \seealso{
 \code{\link{QuantileNorm.train}}

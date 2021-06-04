@@ -4,11 +4,21 @@
 \alias{CytoNorm.train}
 \title{CytoNorm.train}
 \usage{
-CytoNorm.train(files, labels, channels, transformList,
-  outputDir = "./tmp", FlowSOM.params = list(nCells = 1e+06, xdim = 15,
-  ydim = 15, nClus = 10, scale = FALSE),
-  normMethod.train = QuantileNorm.train, normParams = list(nQ = 101),
-  seed = NULL, clean = TRUE, plot = FALSE, verbose = FALSE)
+CytoNorm.train(
+  files,
+  labels,
+  channels,
+  transformList,
+  outputDir = "./tmp",
+  FlowSOM.params = list(nCells = 1e+06, xdim = 15, ydim = 15, nClus = 10, scale =
+    FALSE),
+  normMethod.train = QuantileNorm.train,
+  normParams = list(nQ = 101),
+  seed = NULL,
+  clean = TRUE,
+  plot = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{files}{Full paths of to the fcs files of the control samples.}
