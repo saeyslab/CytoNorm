@@ -11,8 +11,7 @@ install_github('saeyslab/CytoNorm')
 ```
 
 ## Main idea
-
-![Schematic overview of the algorithm](http://saeyslab.github.com/CytoNorm/man/figures/algorithm_overview.png)
+![Schematic overview of the algorithm](man/figures/algorithm_overview.PNG)
 
 To normalize the data between multiple batches, we recommend taking a control sample along across all batches.
 The algorithm is run in two steps. First the model gets trained (blue part), by clustering the cells in their main cell types (using the FlowSOM algorithm), determining the quantiles for each marker for each cluster, and finally learning a spline to transfer from the computed quantiles to goal quantiles (either values averaged across all files, values from one specific batch or manually entered values). Then it can be applied to the samples of interest (red part). These (potentially new) files will be mapped to the FlowSOM clustering, and than the relevant spline for every marker and every cluster will be applied. New fcs files will be created with adapted values. If a validation sample is taken along, it can be used to check if the values after normalization line up correctly.
