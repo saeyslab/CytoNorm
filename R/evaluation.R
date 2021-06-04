@@ -150,7 +150,7 @@ testCV <- function(fsom,
                    plot = TRUE,
                    verbose = FALSE) {
 
-    nClus <- fsom$FlowSOM$map$nNodes
+    nClus <- fsom$map$nNodes
     cluster_labels <- FlowSOM::GetClusters(fsom)
 
     # Determine metacluster labels
@@ -158,7 +158,7 @@ testCV <- function(fsom,
     for(mc in cluster_values){
         if(verbose) message("Computing ", mc, " metaclusters")
         meta_cl[[as.character(mc)]] <-
-            FlowSOM::metaClustering_consensus(fsom$FlowSOM$map$codes,
+            FlowSOM::metaClustering_consensus(fsom$map$codes,
                                               mc,
                                               seed = 1)
     }
@@ -168,11 +168,11 @@ testCV <- function(fsom,
     pctgs <- list()
     for(mc in as.character(c(cluster_values, nClus))){
         counts <- matrix(0,
-                         nrow = length(unique(fsom$FlowSOM$data[,"File"])),
+                         nrow = length(unique(fsom$data[,"File"])),
                          ncol = as.numeric(mc),
-                         dimnames = list(unique(fsom$FlowSOM$data[,"File"]),
+                         dimnames = list(unique(fsom$data[,"File"]),
                                          as.character(seq_len(as.numeric(mc)))))
-        tmp <- table(fsom$FlowSOM$data[,"File"],
+        tmp <- table(fsom$data[,"File"],
                      meta_cl[[mc]][cluster_labels])
         counts[rownames(tmp), colnames(tmp)] <- tmp
         pctgs[[mc]] <- t(apply(counts, 1,
@@ -199,7 +199,7 @@ PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
     cvs <- cv_res$cvs
     pctgs <- cv_res$pctgs
     nMetaClus <- length(levels(fsom$metaclustering))
-    nClus <- fsom$FlowSOM$map$nNodes
+    nClus <- fsom$map$nNodes
 
     cluster_values <- as.numeric(names(cvs))[-length(cvs)]
     width <- max(cluster_values)
