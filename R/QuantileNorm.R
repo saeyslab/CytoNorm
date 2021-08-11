@@ -522,13 +522,15 @@ QuantileNorm.normalize <- function(model,
                             untransformed space.")
                 }
 
+                if (removeOriginal) {
+                    file.remove(file)
+                }
+
                 suppressWarnings(flowCore::write.FCS(ff,
                                                      filename = file.path(outputDir,
                                                                           paste0(prefix,
                                                                                  gsub(".*/","",file)))))
-                if (removeOriginal) {
-                    file.remove(file)
-                }
+
             } else {
                 warning("The model was not trained for ", label, ".")
             }
