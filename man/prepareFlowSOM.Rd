@@ -10,7 +10,6 @@ prepareFlowSOM(
   nCells = 1e+06,
   FlowSOM.params = list(xdim = 15, ydim = 15, nClus = 30, scale = FALSE),
   transformList = NULL,
-  plot = FALSE,
   verbose = FALSE,
   seed = NULL
 )
@@ -31,8 +30,6 @@ scale = FALSE)}.}
 
 \item{transformList}{Transformation list to pass to the flowCore
 \code{transform} function. Default = NULL.}
-
-\item{plot}{If TRUE, the FlowSOM tree is plotted. Default = FALSE.}
 
 \item{verbose}{If TRUE, extra output is printed while running.}
 
