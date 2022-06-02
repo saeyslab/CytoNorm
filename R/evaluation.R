@@ -251,10 +251,12 @@ PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
 #' for all markers and cellTypes.
 #'
 #' @param files     Full paths of to the fcs files of the control samples.
-#' @param transformList Transformation list to pass to the flowCore
-#'                  \code{transform} function
 #' @param channels  Channels to evaluate (corresponding with the column
 #'                  names of the flow frame)
+#' @param transformList Transformation list to pass to the flowCore
+#'                  \code{transform} function. Default NULL
+#' @param prefix    Prefix present in the files, which will be removed to match
+#'                  the manual list.
 #' @param manual    A list which contains for every file a factor array. These
 #'                  arrays contain a cell label for every cell in the files. All
 #'                  arrays should have the same levels. Default = NULL, all
@@ -285,8 +287,9 @@ PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
 #'
 #' @export
 emdEvaluation <- function(files,
-                          transformList,
                           channels,
+                          transformList = NULL,
+                          prefix = "^Norm_",
                           manual = NULL,
                           binSize = 0.1,
                           return_all = FALSE){
@@ -304,12 +307,12 @@ emdEvaluation <- function(files,
         distr[[file]] <- list()
 
         ff <- flowCore::read.FCS(file)
-        ff <- flowCore::transform(ff,transformList)
+        if(!is.null(transformList)) ff <- flowCore::transform(ff,transformList)
         for(cellType in cellTypes){
             if(is.null(manual)){
                 selection <- seq_len(flowCore::nrow(ff))
             } else {
-                selection <- manual[[gsub("^Norm_","",gsub(".*/","",file))]]==cellType
+                selection <- manual[[gsub(prefix,"",gsub(".*/","",file))]]==cellType
             }
             distr[[file]][[cellType]] <-
                 apply(flowCore::exprs(ff)[selection,

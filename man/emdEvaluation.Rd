@@ -6,8 +6,9 @@
 \usage{
 emdEvaluation(
   files,
-  transformList,
   channels,
+  transformList = NULL,
+  prefix = "^Norm_",
   manual = NULL,
   binSize = 0.1,
   return_all = FALSE
@@ -16,11 +17,14 @@ emdEvaluation(
 \arguments{
 \item{files}{Full paths of to the fcs files of the control samples.}
 
-\item{transformList}{Transformation list to pass to the flowCore
-\code{transform} function}
-
 \item{channels}{Channels to evaluate (corresponding with the column
 names of the flow frame)}
+
+\item{transformList}{Transformation list to pass to the flowCore
+\code{transform} function. Default NULL}
+
+\item{prefix}{Prefix present in the files, which will be removed to match
+the manual list.}
 
 \item{manual}{A list which contains for every file a factor array. These
 arrays contain a cell label for every cell in the files. All
