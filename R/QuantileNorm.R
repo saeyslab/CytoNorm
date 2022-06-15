@@ -20,6 +20,7 @@
 #' @param verbose     If TRUE, extra output is printed. Default = FALSE
 #' @param plot        If TRUE, plots are generated showing all quantiles.
 #'                    Default = FALSE.
+#' @param ...         Additional arguments to pass to read.FCS
 #'
 #' @examples
 #' dir <- system.file("extdata", package = "CytoNorm")
@@ -52,7 +53,8 @@ getQuantiles <- function(files,
                          labels = NULL,
                          selection = NULL,
                          verbose = FALSE,
-                         plot = FALSE){
+                         plot = FALSE,
+                         ...){
 
     if (is.null(labels)) labels <- files
 
@@ -75,9 +77,10 @@ getQuantiles <- function(files,
         if (length(ids) > 1) {
             ff <- FlowSOM::AggregateFlowFrames(files[ids], 1e12,
                                                keepOrder = TRUE,
-                                               channels = channels)
+                                               channels = channels,
+                                               ...)
         } else if(length(ids) == 1) {
-            o <- capture.output(ff <- flowCore::read.FCS(files[ids]))
+            o <- capture.output(ff <- flowCore::read.FCS(files[ids],...))
             if (verbose) message(o)
         } else {
             ff <- NULL
@@ -171,6 +174,7 @@ getQuantiles <- function(files,
 #'                    function) showing all quantiles. Default = FALSE.
 #' @param plotTitle   Title to use in the plot. Default = "Quantiles".
 #' @param verbose     If TRUE, progress updates are printed. Default = FALSE.
+#' @param ...         Additional arguments to pass to read.FCS
 #'
 #' @return A list containing all the splines and quantile information. This can
 #'         be used as input for the \code{\link{QuantileNorm.normalize}} function.
@@ -263,7 +267,8 @@ QuantileNorm.train <- function(files,
                                goal = "mean",
                                verbose = FALSE,
                                plot = FALSE,
-                               plotTitle = "Quantiles"){
+                               plotTitle = "Quantiles",
+                               ...){
 
     if(length(labels) != length(files)){
         stop("Input parameters 'labels' and 'files'",
@@ -278,7 +283,7 @@ QuantileNorm.train <- function(files,
         graphics::layout(matrix(1:(xdim*ydim), ncol = xdim, byrow = TRUE))
         graphics::par(mar=c(1, 1, 0, 0))
         textPlot(plotTitle)
-        ff_tmp <- flowCore::read.FCS(files[file.exists(files)][1])
+        ff_tmp <- flowCore::read.FCS(files[file.exists(files)][1],...)
 
         for(channel in channels){
             marker <- flowCore::getChannelMarker(ff_tmp, channel)[,2]
@@ -297,7 +302,8 @@ QuantileNorm.train <- function(files,
                               nQ = nQ,
                               quantileValues = quantileValues,
                               verbose = verbose,
-                              plot = plot)
+                              plot = plot,
+                              ...)
 
     # Get the goal distributions
     if(is.character(goal) && goal == "mean"){
@@ -421,6 +427,7 @@ QuantileNorm.train <- function(files,
 #'                    Default = "Norm_"
 #' @param removeOriginal Should the original fcs be removed? Default = FALSE.
 #' @param verbose     If TRUE, progress updates are printed. Default = FALSE.
+#' @param ...         Additional arguments to pass to read.FCS
 #'
 #' @return Nothing is returned, but the new FCS files are written to the output
 #'         directory
@@ -468,7 +475,8 @@ QuantileNorm.normalize <- function(model,
                                    outputDir = ".",
                                    prefix = "Norm_",
                                    removeOriginal = FALSE,
-                                   verbose = FALSE){
+                                   verbose = FALSE,
+                                   ...){
 
     if(is.null(model$channels) |
        is.null(model$splines) |
@@ -497,7 +505,7 @@ QuantileNorm.normalize <- function(model,
 
             if(label %in% names(model$splines)){
                 # Read the file
-                ff <- flowCore::read.FCS(file)
+                ff <- flowCore::read.FCS(file,...)
 
                 # Transform if necessary
                 if(!is.null(transformList)){

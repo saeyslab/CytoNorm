@@ -19,6 +19,7 @@
 #' @param verbose   If TRUE, extra output is printed while running.
 #' @param seed      If not NULL, set.seed is called with this argument for
 #'                  reproducable results. Default = NULL.
+#' @param ...         Additional arguments to pass to read.FCS
 #'
 #' @return FlowSOM object describing the FlowSOM clustering
 #'
@@ -68,13 +69,15 @@ prepareFlowSOM <- function(files,
                                                  scale = FALSE),
                            transformList = NULL,
                            verbose = FALSE,
-                           seed = NULL){
+                           seed = NULL,
+                           ...){
 
     if (verbose) message("Aggregating files ... ")
 
     if(!is.null(seed)) set.seed(seed)
     o <- capture.output( ff <- FlowSOM::AggregateFlowFrames(files, nCells,
-                                                            channels = colsToUse))
+                                                            channels = colsToUse,
+                                                            ...))
     if(!is.null(transformList)) ff <- flowCore::transform(ff, transformList)
 
     FlowSOM.params <- c(FlowSOM.params,
@@ -125,6 +128,7 @@ prepareFlowSOM <- function(files,
 #'                   assuming \code{\link{QuantileNorm.train}}:
 #'                   list(nQ = 21)). nQ is the number of quantiles
 #'                   to use.
+#' @param ...         Additional arguments to pass to read.FCS
 #'
 #' @return A list containing two elements: the FlowSOM clustering and a list
 #'         containing all the splines per cluster. This can be used as input
@@ -186,7 +190,8 @@ CytoNorm.train <- function(files,
                            seed = NULL,
                            clean = TRUE,
                            plot = FALSE,
-                           verbose = FALSE){
+                           verbose = FALSE,
+                           ...){
 
     if (length(labels) != length(files)) {
         stop("Input parameters 'labels' and 'files'",
@@ -215,7 +220,8 @@ CytoNorm.train <- function(files,
                                FlowSOM.params = FlowSOM.params,
                                transformList = transformList,
                                colsToUse = FlowSOM.channels,
-                               seed = seed)
+                               seed = seed,
+                               ...)
 
         saveRDS(fsom, file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
 
@@ -231,7 +237,7 @@ CytoNorm.train <- function(files,
     # Split files by clusters
     for(file in files){
         if(verbose) message("Splitting ",file)
-        ff <- flowCore::read.FCS(file)
+        ff <- flowCore::read.FCS(file, ...)
         if (!is.null(transformList)) {
             ff <- flowCore::transform(ff,transformList)
         }
@@ -323,6 +329,7 @@ CytoNorm.train <- function(files,
 #' @param clean       If FALSE, temporary files describing the FlowSOM clusters
 #'                    seperately are not removed at the end. Default = TRUE.
 #' @param normMethod.normalize Normalization method to use.
+#' @param ...         Additional arguments to pass to read.FCS
 #' @return Nothing is returned, but the new FCS files are written to the output
 #'         directory
 #' @seealso   \code{\link{CytoNorm.train}}
@@ -378,7 +385,8 @@ CytoNorm.normalize <- function(model,
                                 prefix = "Norm_",
                                 clean = TRUE,
                                 verbose = FALSE,
-                                normMethod.normalize = QuantileNorm.normalize){
+                                normMethod.normalize = QuantileNorm.normalize,
+                               ...){
     if(is.null(model$fsom) |
        is.null(model$clusterRes)){
         stop("The 'model' paramter should be the result of using the
@@ -403,7 +411,7 @@ CytoNorm.normalize <- function(model,
     cluster_files <- list()
     for(file in files){
         if(verbose) message("Splitting ",file)
-        ff <- flowCore::read.FCS(file)
+        ff <- flowCore::read.FCS(file, ...)
 
         if(!is.null(transformList)){
             ff <- flowCore::transform(ff, transformList)
@@ -456,13 +464,13 @@ CytoNorm.normalize <- function(model,
     for(file in files){
         if(verbose) message("Rebuilding ",file)
 
-        ff <- flowCore::read.FCS(file)
+        ff <- flowCore::read.FCS(file, ...)
         for(cluster in unique(fsom$metaclustering)){
             file_name <- file.path(outputDir,
                                    paste0("Norm_",gsub("[:/]","_",file),
                                           "_fsom",cluster,".fcs"))
             if (file.exists(file_name)) {
-                ff_subset <- flowCore::read.FCS(file_name)
+                ff_subset <- flowCore::read.FCS(file_name, ...)
                 flowCore::exprs(ff)[cellClusterIDs[[file]] == cluster,] <- flowCore::exprs(ff_subset)
             }
         }
