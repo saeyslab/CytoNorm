@@ -11,6 +11,8 @@ emdEvaluation(
   prefix = "^Norm_",
   manual = NULL,
   binSize = 0.1,
+  minRange = -100,
+  maxRange = 100,
   return_all = FALSE
 )
 }
@@ -32,6 +34,10 @@ arrays should have the same levels. Default = NULL, all
 cells are evaluated together.}
 
 \item{binSize}{Binsize to approximate distribution. Default = 0.1.}
+
+\item{minRange}{Minimum to approximate distribution. Default = -100.}
+
+\item{maxRange}{Maximum to approximate distribution. Default = 100.}
 
 \item{return_all}{If TRUE, distributions and pairwise distances are returned
 as well. Default = FALSE.}

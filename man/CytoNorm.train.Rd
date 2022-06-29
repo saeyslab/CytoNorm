@@ -17,7 +17,8 @@ CytoNorm.train(
   seed = NULL,
   clean = TRUE,
   plot = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  ...
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ Default = TRUE.}
 Default = FALSE.}
 
 \item{verbose}{If TRUE, progress updates are printed. Default = FALSE.}
+
+\item{...}{Additional arguments to pass to read.FCS}
 }
 \value{
 A list containing two elements: the FlowSOM clustering and a list

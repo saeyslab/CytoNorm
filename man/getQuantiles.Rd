@@ -14,7 +14,8 @@ getQuantiles(
   labels = NULL,
   selection = NULL,
   verbose = FALSE,
-  plot = FALSE
+  plot = FALSE,
+  ...
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ get aggregated. If NULL, all files are handled separately.}
 
 \item{plot}{If TRUE, plots are generated showing all quantiles.
 Default = FALSE.}
+
+\item{...}{Additional arguments to pass to read.FCS}
 }
 \description{
 getQuantiles

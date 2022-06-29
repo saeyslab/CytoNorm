@@ -262,6 +262,8 @@ PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
 #'                  arrays should have the same levels. Default = NULL, all
 #'                  cells are evaluated together.
 #' @param binSize   Binsize to approximate distribution. Default = 0.1.
+#' @param minRange  Minimum to approximate distribution. Default = -100.
+#' @param maxRange  Maximum to approximate distribution. Default = 100.
 #' @param return_all If TRUE, distributions and pairwise distances are returned
 #'                   as well. Default = FALSE.
 #'
@@ -292,6 +294,8 @@ emdEvaluation <- function(files,
                           prefix = "^Norm_",
                           manual = NULL,
                           binSize = 0.1,
+                          minRange = -100,
+                          maxRange = 100,
                           return_all = FALSE){
 
     if(is.null(manual)){
@@ -320,7 +324,7 @@ emdEvaluation <- function(files,
                       2,
                       function(x){
                           graphics::hist(x,
-                                         breaks = seq(-100,100,by=binSize),
+                                         breaks = seq(minRange,maxRange,by=binSize),
                                          plot = FALSE)$counts
                       })
             any(distr[[file]][[cellType]] != 0)

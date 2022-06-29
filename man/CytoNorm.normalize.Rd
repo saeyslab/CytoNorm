@@ -14,7 +14,8 @@ CytoNorm.normalize(
   prefix = "Norm_",
   clean = TRUE,
   verbose = FALSE,
-  normMethod.normalize = QuantileNorm.normalize
+  normMethod.normalize = QuantileNorm.normalize,
+  ...
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ seperately are not removed at the end. Default = TRUE.}
 \item{verbose}{If TRUE, progress updates are printed. Default = FALSE.}
 
 \item{normMethod.normalize}{Normalization method to use.}
+
+\item{...}{Additional arguments to pass to read.FCS}
 }
 \value{
 Nothing is returned, but the new FCS files are written to the output

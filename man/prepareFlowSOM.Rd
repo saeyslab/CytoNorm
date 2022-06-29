@@ -11,7 +11,8 @@ prepareFlowSOM(
   FlowSOM.params = list(xdim = 15, ydim = 15, nClus = 30, scale = FALSE),
   transformList = NULL,
   verbose = FALSE,
-  seed = NULL
+  seed = NULL,
+  ...
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ scale = FALSE)}.}
 
 \item{seed}{If not NULL, set.seed is called with this argument for
 reproducable results. Default = NULL.}
+
+\item{...}{Additional arguments to pass to read.FCS}
 }
 \value{
 FlowSOM object describing the FlowSOM clustering

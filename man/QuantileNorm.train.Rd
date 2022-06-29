@@ -15,7 +15,8 @@ QuantileNorm.train(
   goal = "mean",
   verbose = FALSE,
   plot = FALSE,
-  plotTitle = "Quantiles"
+  plotTitle = "Quantiles",
+  ...
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ values or one of the batch labels.}
 function) showing all quantiles. Default = FALSE.}
 
 \item{plotTitle}{Title to use in the plot. Default = "Quantiles".}
+
+\item{...}{Additional arguments to pass to read.FCS}
 }
 \value{
 A list containing all the splines and quantile information. This can
