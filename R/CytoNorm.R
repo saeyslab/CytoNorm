@@ -5,7 +5,7 @@
 #' groups of similar cells. Typically you will not call this function, but use
 #' the wrapper function \code{\link{CytoNorm.train}} instead.
 #'
-#' @param files     Files to use (with path)
+#' @param files     path to FCS file or a flowSet containing the samples
 #' @param colsToUse IDs or column names of the columns to use for clustering
 #' @param nCells    The total number of cells to use for the FlowSOM clustering.
 #'                  This number is divided by the number of files to determine
@@ -105,7 +105,8 @@ prepareFlowSOM <- function(files,
 #' \code{outputDir} and will be removed again by default (depending on
 #' \code{clean}).
 #'
-#' @param files       Full paths of to the fcs files of the control samples.
+#' @param files       Full paths to the fcs files or a flowSet of the control 
+#'                    samples.
 #' @param labels      A label for every file, indicating to which batch it
 #'                    belongs, e.g. the plate ID.
 #' @param channels    Column names of the channels that need to be normalized
@@ -174,6 +175,9 @@ prepareFlowSOM <- function(files,
 #'                    transformList = transformList,
 #'                    transformList.reverse = transformList.reverse)
 #'
+#' @importFrom methods is
+#' @importFrom flowCore sampleNames
+#'
 #' @export
 CytoNorm.train <- function(files,
                            labels,
@@ -235,30 +239,41 @@ CytoNorm.train <- function(files,
     }
 
     # Split files by clusters
-    for(file in files){
-        if(verbose) message("Splitting ",file)
-        ff <- flowCore::read.FCS(file, ...)
-        if (!is.null(transformList)) {
-            ff <- flowCore::transform(ff,transformList)
+    for(i in seq_along(files)) {
+      if(is(files, "flowSet")) {
+        file <- sampleNames(files)[i]
+        ff <- files[[i]]
+      } else {
+        file <- files[i]
+        ff <- flowCore::read.FCS(file, ...) 
+      }
+      if(verbose) message("Splitting ", file)
+      if (!is.null(transformList)) {
+        ff <- flowCore::transform(ff,transformList)
+      }
+      # Map the file to the FlowSOM clustering
+      fsom_file <- FlowSOM::NewData(fsom, ff)
+      # Get the metacluster label for every cell
+      cellClusterIDs <- FlowSOM::GetMetaclusters(fsom_file) #fsom$metaclustering[GetClusters(fsom_file)]
+      for (cluster in unique(fsom$metaclustering)) {
+        if (sum(cellClusterIDs == cluster) > 0) {
+          suppressWarnings(
+            flowCore::write.FCS(
+              ff[cellClusterIDs == cluster,],
+              file=file.path(outputDir,
+                             paste0(gsub("[:/]","_",file),
+                                    "_fsom",cluster,".fcs"))))
         }
-
-        # Map the file to the FlowSOM clustering
-        fsom_file <- FlowSOM::NewData(fsom, ff)
-
-        # Get the metacluster label for every cell
-        cellClusterIDs <- FlowSOM::GetMetaclusters(fsom_file) #fsom$metaclustering[GetClusters(fsom_file)]
-        for (cluster in unique(fsom$metaclustering)) {
-            if (sum(cellClusterIDs == cluster) > 0) {
-                suppressWarnings(
-                    flowCore::write.FCS(
-                        ff[cellClusterIDs == cluster,],
-                        file=file.path(outputDir,
-                                       paste0(gsub("[:/]","_",file),
-                                              "_fsom",cluster,".fcs"))))
-            }
-        }
+      }
     }
 
+    # file names
+    if(is(files, "flowSet")) {
+      file_names <- sampleNames(files)
+    } else {
+      file_names <- files
+    }
+    
     # Learn quantiles for each cluster
     clusterRes <- list()
     for (cluster in unique(fsom$metaclustering)) {
@@ -273,7 +288,7 @@ CytoNorm.train <- function(files,
 
         normParams_tmp <- c(normParams,
                             list(files = file.path(outputDir,
-                                                   paste0(gsub("[:/]", "_", files),
+                                                   paste0(gsub("[:/]", "_", file_names),
                                                           "_fsom", cluster, ".fcs")),
                                  labels = as.character(labels),
                                  channels = channels,
@@ -293,7 +308,7 @@ CytoNorm.train <- function(files,
     if(clean){
         for(cluster in unique(fsom$metaclustering)){
             tmp_files <- file.path(outputDir,
-                                   paste0(gsub("[:/]", "_", files),
+                                   paste0(gsub("[:/]", "_", file_names),
                                           "_fsom", cluster, ".fcs"))
 
             file.remove(tmp_files[file.exists(tmp_files)])
@@ -314,7 +329,7 @@ CytoNorm.train <- function(files,
 #'
 #' @param model       Model of the batch effercts, as computed by
 #'                    \code{\link{CytoNorm.train}}
-#' @param files       Full paths of to the fcs files of the samples.
+#' @param files       Full paths of the fcs files or a flowSet of the samples.
 #' @param labels      A label for every file, indicating to which batch it
 #'                    belongs, e.g. the plate ID.
 #' @param transformList   Transformation list to pass to the flowCore
@@ -329,9 +344,12 @@ CytoNorm.train <- function(files,
 #' @param clean       If FALSE, temporary files describing the FlowSOM clusters
 #'                    seperately are not removed at the end. Default = TRUE.
 #' @param normMethod.normalize Normalization method to use.
+#' @param write       logical indicating whether the normalised samples should 
+#'                    be written to new FCS files in a \code{Normalized} 
+#'                    directory within \code{outputDir}, set to TRUE by default.
 #' @param ...         Additional arguments to pass to read.FCS
-#' @return Nothing is returned, but the new FCS files are written to the output
-#'         directory
+#' @return a flowSet containing the normalised samples and optionally write FCS
+#'                    files to \code{Normalized} directory in \code{outputDir}.
 #' @seealso   \code{\link{CytoNorm.train}}
 #'
 #' @examples
@@ -375,6 +393,9 @@ CytoNorm.train <- function(files,
 #'                    transformList.reverse = transformList.reverse,
 #'                    verbose = TRUE)
 #'
+#' @importFrom methods is
+#' @importFrom flowCore sampleNames flowSet
+#'
 #' @export
 CytoNorm.normalize <- function(model,
                                 files,
@@ -386,6 +407,7 @@ CytoNorm.normalize <- function(model,
                                 clean = TRUE,
                                 verbose = FALSE,
                                 normMethod.normalize = QuantileNorm.normalize,
+                               write = TRUE,
                                ...){
     if(is.null(model$fsom) |
        is.null(model$clusterRes)){
@@ -405,36 +427,48 @@ CytoNorm.normalize <- function(model,
     fsom <- model$fsom
     clusterRes <- model$clusterRes
 
+    # file names
+    if(is(files, "flowSet")) {
+      file_names <- sampleNames(files)
+    } else {
+      file_names <- files
+    }
+    
     # Split files by clusters
     cellClusterIDs <- list()
     meta <- list()
     cluster_files <- list()
-    for(file in files){
-        if(verbose) message("Splitting ",file)
+    for(i in seq_along(files)) {
+      if(is(files, "flowSet")) {
+        file <- file_names[i]
+        ff <- files[[i]]
+      } else {
+        file <- files[i]
         ff <- flowCore::read.FCS(file, ...)
-
-        if(!is.null(transformList)){
-            ff <- flowCore::transform(ff, transformList)
-            # meta[[file]] <- list()
-            # meta[[file]][["description_original"]] <- ff@description
-            # meta[[file]][["parameters_original"]] <- ff@parameters
+      }
+      if(verbose) message("Splitting ",file)
+      if(!is.null(transformList)){
+        ff <- flowCore::transform(ff, transformList)
+        # meta[[file]] <- list()
+        # meta[[file]][["description_original"]] <- ff@description
+        # meta[[file]][["parameters_original"]] <- ff@parameters
+      }
+      
+      fsom_file <- FlowSOM::NewData(fsom,ff)
+      
+      cellClusterIDs[[file]] <- FlowSOM::GetMetaclusters(fsom_file)
+      
+      for(cluster in unique(fsom$metaclustering)){
+        if (sum(cellClusterIDs[[file]] == cluster) > 0) {
+          f <- file.path(outputDir,
+                         paste0(gsub("[:/]","_",file),
+                                "_fsom", cluster, ".fcs"))
+          suppressWarnings(
+            flowCore::write.FCS(ff[cellClusterIDs[[file]] == cluster],
+                                file = f)
+          )
         }
-
-        fsom_file <- FlowSOM::NewData(fsom,ff)
-
-        cellClusterIDs[[file]] <- FlowSOM::GetMetaclusters(fsom_file)
-
-        for(cluster in unique(fsom$metaclustering)){
-            if (sum(cellClusterIDs[[file]] == cluster) > 0) {
-                f <- file.path(outputDir,
-                               paste0(gsub("[:/]","_",file),
-                                      "_fsom", cluster, ".fcs"))
-                suppressWarnings(
-                    flowCore::write.FCS(ff[cellClusterIDs[[file]] == cluster],
-                                        file = f)
-                )
-            }
-        }
+      }
     }
 
     # Apply normalization on each cluster
@@ -443,7 +477,7 @@ CytoNorm.normalize <- function(model,
         files_tmp <- file.path(outputDir,
                                paste0(gsub("[:/]",
                                            "_",
-                                           files),
+                                           file_names),
                                       "_fsom",
                                       cluster,
                                       ".fcs"))
@@ -461,41 +495,66 @@ CytoNorm.normalize <- function(model,
     }
 
     # Combine clusters into one final fcs file
-    for(file in files){
-        if(verbose) message("Rebuilding ",file)
-
-        ff <- flowCore::read.FCS(file, ...)
-        for(cluster in unique(fsom$metaclustering)){
+    res <- flowSet(
+      lapply(
+        seq_along(files),
+        function(i) {
+          
+          if(is(files, "flowSet")) {
+            file <- file_names[i]
+            ff <- files[[i]]
+          } else {
+            file <- files[i]
+            ff <- flowCore::read.FCS(file, ...)
+          }
+          if(verbose) message("Rebuilding ",file)
+          for(cluster in unique(fsom$metaclustering)){
             file_name <- file.path(outputDir,
                                    paste0("Norm_",gsub("[:/]","_",file),
                                           "_fsom",cluster,".fcs"))
             if (file.exists(file_name)) {
-                ff_subset <- flowCore::read.FCS(file_name, ...)
-                flowCore::exprs(ff)[cellClusterIDs[[file]] == cluster,] <- flowCore::exprs(ff_subset)
+              ff_subset <- flowCore::read.FCS(file_name, ...)
+              flowCore::exprs(ff)[cellClusterIDs[[file]] == cluster,] <- flowCore::exprs(ff_subset)
             }
-        }
-
-        if(!is.null(transformList.reverse)){
+          }
+          if(!is.null(transformList.reverse)){
             ff <- flowCore::transform(ff, transformList.reverse)
             # ff@description <- meta[[file]][["description_original"]]
             # ff@parameters <- meta[[file]][["parameters_original"]]
-        }
-
-
-        # Adapt to real min and max because this gets strange values otherwise
-        ff@parameters@data[,"minRange"] <- apply(ff@exprs, 2, min)
-        ff@parameters@data[,"maxRange"] <- apply(ff@exprs, 2, max)
-        ff@parameters@data[,"range"] <- ff@parameters@data[,"maxRange"] -
+          }
+          
+          
+          # Adapt to real min and max because this gets strange values otherwise
+          ff@parameters@data[,"minRange"] <- apply(ff@exprs, 2, min)
+          ff@parameters@data[,"maxRange"] <- apply(ff@exprs, 2, max)
+          ff@parameters@data[,"range"] <- ff@parameters@data[,"maxRange"] -
             ff@parameters@data[,"minRange"]
-
-        if(clean){
+          
+          if(clean){
             file.remove(file.path(outputDir,
-                      paste0("Norm_",gsub("[:/]","_",file),
-                             "_fsom",unique(fsom$metaclustering),".fcs")))
+                                  paste0("Norm_",gsub("[:/]","_",file),
+                                         "_fsom",unique(fsom$metaclustering),".fcs")))
+          }
+          
+          if(write) {
+            suppressWarnings(
+              flowCore::write.FCS(
+                ff,
+                file= file.path(outputDir,paste0(prefix,gsub(".*/","",file)))
+              )
+            )
+          }
+          return(ff)
         }
+      )
+    )
 
-        suppressWarnings(flowCore::write.FCS(ff,
-                                             file=file.path(outputDir,
-                                                            paste0(prefix,gsub(".*/","",file)))))
+    # dremove empty output directory
+    if(length(list.files(outputDir)) == 0){
+      unlink(outputDir)
     }
+  
+    # normalized flowSet
+    return(res)
+    
 }

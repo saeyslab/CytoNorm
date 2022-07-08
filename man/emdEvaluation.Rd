@@ -64,7 +64,7 @@ for all markers and cellTypes.
    transformList <- flowCore::transformList(channelsToNormalize,
                                             cytofTransform)
    emdEvaluation(file.path(dir,fileNames),
-                 transformList,
+                 transformList = transformList,
                  channelsToNormalize)
 
 }

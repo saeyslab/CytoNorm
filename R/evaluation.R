@@ -284,7 +284,7 @@ PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
 #'    transformList <- flowCore::transformList(channelsToNormalize,
 #'                                             cytofTransform)
 #'    emdEvaluation(file.path(dir,fileNames),
-#'                  transformList,
+#'                  transformList = transformList,
 #'                  channelsToNormalize)
 #'
 #' @export
