@@ -16,7 +16,7 @@ prepareFlowSOM(
 )
 }
 \arguments{
-\item{files}{Files to use (with path)}
+\item{files}{path to FCS file or a flowSet containing the samples}
 
 \item{colsToUse}{IDs or column names of the columns to use for clustering}
 

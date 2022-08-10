@@ -22,7 +22,8 @@ CytoNorm.train(
 )
 }
 \arguments{
-\item{files}{Full paths of to the fcs files of the control samples.}
+\item{files}{Full paths to the fcs files or a flowSet of the control 
+samples.}
 
 \item{labels}{A label for every file, indicating to which batch it
 belongs, e.g. the plate ID.}

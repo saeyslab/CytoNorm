@@ -15,6 +15,7 @@ CytoNorm.normalize(
   clean = TRUE,
   verbose = FALSE,
   normMethod.normalize = QuantileNorm.normalize,
+  write = TRUE,
   ...
 )
 }
@@ -22,7 +23,7 @@ CytoNorm.normalize(
 \item{model}{Model of the batch effercts, as computed by
 \code{\link{CytoNorm.train}}}
 
-\item{files}{Full paths of to the fcs files of the samples.}
+\item{files}{Full paths of the fcs files or a flowSet of the samples.}
 
 \item{labels}{A label for every file, indicating to which batch it
 belongs, e.g. the plate ID.}
@@ -46,11 +47,15 @@ seperately are not removed at the end. Default = TRUE.}
 
 \item{normMethod.normalize}{Normalization method to use.}
 
+\item{write}{logical indicating whether the normalised samples should 
+be written to new FCS files in a \code{Normalized} 
+directory within \code{outputDir}, set to TRUE by default.}
+
 \item{...}{Additional arguments to pass to read.FCS}
 }
 \value{
-Nothing is returned, but the new FCS files are written to the output
-        directory
+a flowSet containing the normalised samples and optionally write FCS
+                   files to \code{Normalized} directory in \code{outputDir}.
 }
 \description{
 Normalize data, given the batch effects learned from control samples per
