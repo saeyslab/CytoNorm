@@ -47,8 +47,8 @@ seperately are not removed at the end. Default = TRUE.}
 
 \item{normMethod.normalize}{Normalization method to use.}
 
-\item{write}{logical indicating whether the normalised samples should 
-be written to new FCS files in a \code{Normalized} 
+\item{write}{logical indicating whether the normalised samples should
+be written to new FCS files in a \code{Normalized}
 directory within \code{outputDir}, set to TRUE by default.}
 
 \item{...}{Additional arguments to pass to read.FCS}

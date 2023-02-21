@@ -10,19 +10,19 @@ CytoNorm.train(
   channels,
   transformList,
   outputDir = "./tmp",
-  FlowSOM.params = list(nCells = 1e+06, xdim = 15, ydim = 15, nClus = 10, scale =
-    FALSE),
+  FlowSOM.params = list(nCells = 1e+06, xdim = 15, ydim = 15, nClus = 10, scale = FALSE),
   normMethod.train = QuantileNorm.train,
   normParams = list(nQ = 101),
   seed = NULL,
   clean = TRUE,
   plot = FALSE,
   verbose = FALSE,
+  recompute = FALSE,
   ...
 )
 }
 \arguments{
-\item{files}{Full paths to the fcs files or a flowSet of the control 
+\item{files}{Full paths to the fcs files or a flowSet of the control
 samples.}
 
 \item{labels}{A label for every file, indicating to which batch it
@@ -57,6 +57,9 @@ Default = TRUE.}
 Default = FALSE.}
 
 \item{verbose}{If TRUE, progress updates are printed. Default = FALSE.}
+
+\item{recompute}{If FALSE, will try to reuse previously saved FlowSOM model.
+If so, a warning message will be printed. Default = FALSE.}
 
 \item{...}{Additional arguments to pass to read.FCS}
 }

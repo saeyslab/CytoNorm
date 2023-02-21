@@ -129,6 +129,8 @@ prepareFlowSOM <- function(files,
 #'                   assuming \code{\link{QuantileNorm.train}}:
 #'                   list(nQ = 21)). nQ is the number of quantiles
 #'                   to use.
+#' @param recompute If FALSE, will try to reuse previously saved FlowSOM model.
+#'                  If so, a warning message will be printed. Default = FALSE.
 #' @param ...         Additional arguments to pass to read.FCS
 #'
 #' @return A list containing two elements: the FlowSOM clustering and a list
@@ -195,6 +197,7 @@ CytoNorm.train <- function(files,
                            clean = TRUE,
                            plot = FALSE,
                            verbose = FALSE,
+                           recompute = FALSE,
                            ...){
 
     if (length(labels) != length(files)) {
@@ -208,7 +211,7 @@ CytoNorm.train <- function(files,
         dirCreated = dir.create(outputDir)
     }
 
-    if(!file.exists(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))){
+    if(recompute | !file.exists(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))){
 
         nCells <- FlowSOM.params[["nCells"]]
         if(is.null(FlowSOM.params[["channels"]])){
@@ -235,7 +238,8 @@ CytoNorm.train <- function(files,
         }
     } else {
         fsom <- readRDS(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
-        warning("Reusing previously saved FlowSOM result.")
+        warning("Reusing FlowSOM result previously saved at ",
+                file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
     }
 
     # Split files by clusters
