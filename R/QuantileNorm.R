@@ -305,13 +305,24 @@ QuantileNorm.train <- function(files,
                               plot = plot,
                               ...)
 
+    if(!is.null(limit)){
+        quantiles <- lapply(quantiles, function(quantile_matrix){
+            rbind(quantile_matrix,
+                  matrix(limit,
+                         nrow = length(limit),
+                         ncol = ncol(quantile_matrix),
+                         byrow = FALSE,
+                         dimnames = list(paste0("Fixed_",limit), NULL)))
+        })
+    }
+
     # Get the goal distributions
     if(is.character(goal) && goal == "mean"){
         refQuantiles <- matrix(apply(matrix(unlist(quantiles),
                                             ncol = length(unique(labels))),
                                      1, mean, na.rm = TRUE),
-                               nrow = nQ,
-                               dimnames = list(c(0,(1:(nQ-1))/(nQ-1)),
+                               nrow = nQ+length(limit),
+                               dimnames = list(rownames(quantiles[[1]]),
                                                channels))
     } else if (is.numeric(goal)) {
         if(length(goal) == nQ){
@@ -359,13 +370,7 @@ QuantileNorm.train <- function(files,
                 refQ <- refQuantiles[, channel]
                 labelQ <- quantiles[[label]][, channel]
 
-                if(!is.null(limit)){
-                    refQ <- c(refQ, limit)
-                    labelQ <- c(labelQ, limit)
-                }
-
                 if(length(unique(labelQ)) > 1){
-
                     suppressWarnings(spl <- stats::splinefun(labelQ,
                                                              refQ,
                                                              method="monoH.FC"))

@@ -42,7 +42,8 @@
 #'                                               ydim = 10,
 #'                                               nClus = 5,
 #'                                               scale = FALSE),
-#'                         normParams = list(nQ = 101, limit = c(0,7)),
+#'                         normParams = list(nQ = 101,
+#'                                           limit = c(0,7)),
 #'                         seed = 1)
 #'
 #' plotlist <- plotSplines(model)
@@ -86,7 +87,7 @@ plotSplines <- function(model,
             do.call(rbind, l)
         })
         spline_points <- do.call(rbind, spline_points)
-        spline_points$cluster <- factor(ref_points$cluster,
+        spline_points$cluster <- factor(spline_points$cluster,
                                         levels = clusters)
         spline_points$channel <- factor(model$fsom$prettyColnames[spline_points$channel],
                                      levels = model$fsom$prettyColnames)
