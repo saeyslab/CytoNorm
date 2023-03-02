@@ -65,7 +65,8 @@ model <- CytoNorm.train(files = train_data$Path,
                                               ydim = 10,
                                               nClus = 5,
                                               scale = FALSE),
-                        normParams = list(nQ = 101, limit = c(0,7)),
+                        normParams = list(nQ = 101,
+                                          limit = c(0,7)),
                         seed = 1)
 
 plotlist <- plotSplines(model)
