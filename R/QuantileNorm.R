@@ -39,7 +39,7 @@
 #'                    cluster_rows = FALSE,
 #'                    cluster_cols = FALSE,
 #'                    labels_col =
-#'                      paste0(FlowSOM::get_markers(ff, colnames(quantiles[[1]])),
+#'                      paste0(FlowSOM::GetMarkers(ff, colnames(quantiles[[1]])),
 #'                             " (", colnames(quantiles[[1]]), ")"),
 #'                    main = files[1])
 #'

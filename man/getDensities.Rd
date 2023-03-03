@@ -47,7 +47,7 @@ densities <- getDensities(files = file.path(dir, files),
                           quantileValues = c(0.25, 0.5, 0.75))
 
 densities$densities$Marker <- paste0(
-  FlowSOM::get_markers(ff, densities$densities$Channel),
+  FlowSOM::GetMarkers(ff, densities$densities$Channel),
   " (", densities$densities$Channel, ")")
 
 library(ggplot2)
@@ -58,13 +58,13 @@ ggplot(dplyr::filter(densities$densities,
   theme_minimal()
 
 ggplot(dplyr::filter(densities$quantiles,
-                     Channel == FlowSOM::get_channels(ff, "CD66"))) +
+                     Channel == FlowSOM::GetChannels(ff, "CD66"))) +
   geom_vline(aes(xintercept = `0.25`), col = "grey") +
   geom_vline(aes(xintercept = `0.5`), col = "grey", lwd = 1) +
   geom_vline(aes(xintercept = `0.75`), col = "grey") +
   geom_line(aes(x = x, y = y),
             data = dplyr::filter(densities$densities,
-                     Channel == FlowSOM::get_channels(ff, "CD66"))) +
+                     Channel == FlowSOM::GetChannels(ff, "CD66"))) +
   facet_wrap(~ File) +
   theme_minimal()
 

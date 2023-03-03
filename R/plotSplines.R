@@ -50,7 +50,7 @@
 #' plotlist[[1]]
 #'
 #' @export
-#' @importFrom ggplot2 ggplot geom_point facet_grid geom_abline geom_line
+#' @importFrom ggplot2 ggplot geom_point facet_grid geom_abline geom_line .data
 #'             theme_minimal xlim ylim xlab ylab ggtitle geom_text theme_void
 plotSplines <- function(model,
                         minValue = -0.5,

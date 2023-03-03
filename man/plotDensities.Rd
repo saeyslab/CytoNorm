@@ -4,12 +4,29 @@
 \alias{plotDensities}
 \title{Plot densities per batch}
 \usage{
-plotDensities(input, channels, colors, transformList = NULL)
+plotDensities(
+  input,
+  channels,
+  colors,
+  transformList = NULL,
+  suffix = c(original = "", normalized = "_norm")
+)
 }
 \arguments{
-\item{input}{Named list containing paths to fcs files, for both batch and batch_norm}
+\item{input}{Named list containing paths to fcs files, for both batch and
+batch_norm. For a batch, the input can be either one or more
+paths to fcs files or a flowFrame.}
 
 \item{channels}{Channels to plot}
+
+\item{colors}{Vector with a color for each batch}
+
+\item{transformList}{In case the data from the fcs files still needs to be
+transformed. Default NULL, in which case no transformation
+happens.}
+
+\item{suffix}{Suffixes used to distinguish the original from the normalized files.
+Default is c("original" = "", "normalized" = "_norm")}
 }
 \value{
 List with 2 plots per channel
@@ -55,15 +72,29 @@ CytoNorm.normalize(model = model,
                    labels = validation_data$Batch,
                    transformList = transformList,
                    transformList.reverse = transformList.reverse,
+                   outputDir = "Normalized",
                    verbose = TRUE)
 
-plots <- plotDensities(input = list("PTLG021" = validation_data$Path[1],
-                           "PTLG028" = validation_data$Path[2],
-                           "PTLG034" = validation_data$Path[3],
-                           "PTLG021_norm" = paste0("Normalized/Norm_",validation_data$File[1]),
-                           "PTLG028_norm" = paste0("Normalized/Norm_",validation_data$File[2]),
-                           "PTLG034_norm" = paste0("Normalized/Norm_",validation_data$File[3])),
-             channels = c("Er170Di", "La139Di"),
-             colors = c("blue", "red", "green"),
-             transformList = transformList)
+original <- list("PTLG021" = validation_data$Path[1],
+                 "PTLG028" = validation_data$Path[2],
+                 "PTLG034" = validation_data$Path[3])
+normalized <- list("PTLG021_norm" = paste0("Normalized/Norm_",validation_data$File[1]),
+                   "PTLG028_norm" = paste0("Normalized/Norm_",validation_data$File[2]),
+                   "PTLG034_norm" = paste0("Normalized/Norm_",validation_data$File[3]))
+
+channels_to_plot <- c("Er170Di", "La139Di")
+plots <- plotDensities(input = c(original, normalized),
+                       channels = channels_to_plot,
+                       colors = c("blue", "red", "green"),
+                       transformList = transformList)
+
+p <- ggpubr::ggarrange(ggpubr::ggarrange(plotlist = plots[1:(2*length(channels_to_plot))],
+                                         ncol = 2,
+                                         nrow = length(channels_to_plot)),
+                       ggpubr::ggarrange(ggpubr::as_ggplot(plots[[length(plots)]])),
+                       ncol = 1, nrow = 2, heights = c(10,0.5))
+print(ggpubr::annotate_figure(p,
+                      top = paste0("Before normalization",
+                                   "                              ",
+                                   "After normalization")))
 }
