@@ -7,6 +7,8 @@
 #'                Default = all batches used in the model.
 #' @param channels Channels to include. Default = first three channels used.
 #' @param clusters Clusters to include. Default = all clusters.
+#' @param groupClusters Logical, if TRUE al clusters are shown on one subplot,
+#'                      if FALSE, there will be a separate row per cluster.
 #'
 #' @returns List with one plot per batch. The figure shows a grid with the
 #'          specified clusters in rows and the specified markers in columns.
@@ -47,6 +49,7 @@
 #'                         seed = 1)
 #'
 #' plotlist <- plotSplines(model)
+#' plotlist <- plotSplines(model, groupClusters = TRUE)
 #' plotlist[[1]]
 #'
 #' @export
@@ -57,7 +60,8 @@ plotSplines <- function(model,
                         maxValue = 8,
                         batches = names(model$clusterRes[[1]]$splines),
                         channels = model$clusterRes[[1]]$channels[1:3],
-                        clusters = names(model$clusterRes)){
+                        clusters = names(model$clusterRes),
+                        groupClusters = FALSE){
 
     plotlist <- list()
     for(batch in batches){
@@ -99,18 +103,32 @@ plotSplines <- function(model,
 
         if(any(!is.na(ref_points$batch_quantiles))){
             p <- ggplot2::ggplot(ref_points) +
-                ggplot2::geom_point(aes(x = .data$batch_quantiles,
-                                        y = .data$goal_quantiles))+
-                ggplot2::facet_grid(.data$cluster ~ .data$channel) +
                 ggplot2::geom_abline(slope = 1, intercept = 0, col = "#999999") +
-                ggplot2::geom_line(aes(x = .data$x, y = .data$y),
-                                   data = spline_points, col = "#b30000") +
                 ggplot2::theme_minimal() +
                 ggplot2::xlim(minValue, maxValue) +
                 ggplot2::ylim(minValue, maxValue) +
                 ggplot2::xlab("Original distribution") +
                 ggplot2::ylab("Goal distribution") +
                 ggplot2::ggtitle(paste("Batch", batch))
+
+            if(!groupClusters){
+                p <- p +
+                    ggplot2::facet_grid(.data$cluster ~ .data$channel) +
+                    ggplot2::geom_line(aes(x = .data$x, y = .data$y),
+                                       data = spline_points, col = "#b30000")+
+                    ggplot2::geom_point(aes(x = .data$batch_quantiles,
+                                            y = .data$goal_quantiles))
+            } else {
+                p <- p +
+                    ggplot2::facet_wrap(~ .data$channel) +
+                    ggplot2::geom_line(aes(x = .data$x, y = .data$y,
+                                           color = .data$cluster),
+                                       data = spline_points)+
+                    ggplot2::geom_point(aes(x = .data$batch_quantiles,
+                                            y = .data$goal_quantiles,
+                                            color = .data$cluster))
+            }
+
 
         } else {
             p <- ggplot2::ggplot() +
