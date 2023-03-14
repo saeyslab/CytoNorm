@@ -72,9 +72,10 @@ plotSplines <- function(model,
         ref_points <- do.call(rbind, ref_points)
         ref_points$cluster <- factor(ref_points$cluster,
                                      levels = clusters)
-        ref_points$channel <- factor(model$fsom$prettyColnames[ref_points$channel],
+        if(all(sapply(ref_points$channel, function(x)x %in% names(model$fsom$prettyColnames)))){
+            ref_points$channel <- factor(model$fsom$prettyColnames[ref_points$channel],
                                      levels = model$fsom$prettyColnames)
-
+        }
 
         spline_x  <- seq(minValue, maxValue, (maxValue-minValue)/100)
         spline_points <- lapply(clusters, function(cluster){
@@ -89,8 +90,10 @@ plotSplines <- function(model,
         spline_points <- do.call(rbind, spline_points)
         spline_points$cluster <- factor(spline_points$cluster,
                                         levels = clusters)
-        spline_points$channel <- factor(model$fsom$prettyColnames[spline_points$channel],
-                                     levels = model$fsom$prettyColnames)
+        if(all(sapply(spline_points$channel, function(x)x %in% names(model$fsom$prettyColnames)))){
+            spline_points$channel <- factor(model$fsom$prettyColnames[spline_points$channel],
+                                            levels = model$fsom$prettyColnames)
+        }
 
 
 
