@@ -525,6 +525,15 @@ QuantileNorm.normalize <- function(model,
                     flowCore::exprs(ff)[, channel] <-
                         model$splines[[label]][[channel]](
                             flowCore::exprs(ff[, channel]))
+                    infinities <- is.infinite(flowCore::exprs(ff)[, channel])
+                    if(any(infinities)){
+                        warning(paste0(label, " ", channel,
+                                       ": Replacing ", sum(infinities),
+                                       " infinity values by max value."))
+                        flowCore::exprs(ff)[infinities, channel] <-
+                            sign(flowCore::exprs(ff)[infinities, channel]) *
+                            max(abs(flowCore::exprs(ff)[-infinities, channel]))
+                    }
                 }
 
                 if (!is.null(transformList.reverse)) {

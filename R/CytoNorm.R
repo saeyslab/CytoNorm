@@ -521,17 +521,24 @@ CytoNorm.normalize <- function(model,
                 }
             }
             if(!is.null(transformList.reverse)){
+                print(paste("Before ", sum(is.infinite(ff@exprs))))
                 ff <- flowCore::transform(ff, transformList.reverse)
+                print(paste("After ", sum(is.infinite(ff@exprs))))
                 # ff@description <- meta[[file]][["description_original"]]
                 # ff@parameters <- meta[[file]][["parameters_original"]]
             }
 
 
             # Adapt to real min and max because this gets strange values otherwise
+            print(apply(ff@exprs, 2, min))
+            print(apply(ff@exprs, 2, max))
             ff@parameters@data[,"minRange"] <- apply(ff@exprs, 2, min)
             ff@parameters@data[,"maxRange"] <- apply(ff@exprs, 2, max)
             ff@parameters@data[,"range"] <- ff@parameters@data[,"maxRange"] -
                 ff@parameters@data[,"minRange"]
+            for(i in seq_len(flowCore::ncol(ff))){
+                ff@description[[paste0("$P",i,"R")]] <- ff@parameters@data[i,"range"]
+            }
 
             if(clean){
                 file.remove(file.path(outputDir,
@@ -540,6 +547,8 @@ CytoNorm.normalize <- function(model,
             }
 
             if(write) {
+
+                print(paste("Writing ", sum(is.infinite(ff@exprs))))
                 suppressWarnings(
                     flowCore::write.FCS(
                         ff,
