@@ -332,77 +332,82 @@ emdEvaluation <- function(files,
                           binSize = 0.1,
                           minRange = -100,
                           maxRange = 100,
-                          return_all = FALSE){
+                          return_all = FALSE,
+                          manualThreshold = 2){
 
-    if(is.null(manual)){
+    if (is.null(manual)) {
         cellTypes <- c("AllCells")
     } else {
         cellTypes <- levels(manual[[1]])
     }
-
+    prettyColnames <- NULL
     distr <- list()
-    for(file in files){
-        print(file)
-
+    for (file in files) {
         distr[[file]] <- list()
 
         ff <- flowCore::read.FCS(file)
-        if(!is.null(transformList)) ff <- flowCore::transform(ff,transformList)
-        for(cellType in cellTypes){
-            if(is.null(manual)){
+        if (is.null(prettyColnames)){
+            prettyColnames <- paste0(FlowSOM::GetMarkers(ff, channels = channels),
+                                     " <", channels, ">")
+        }
+        if (!is.null(transformList)) {
+            ff <- flowCore::transform(ff, transformList)
+        }
+        for (cellType in cellTypes) {
+            if (is.null(manual)) {
                 selection <- seq_len(flowCore::nrow(ff))
             } else {
-                selection <- manual[[gsub(prefix,"",gsub(".*/","",file))]]==cellType
+                selection <- manual[[gsub(prefix, "", gsub(".*/",
+                                                           "", file))]] == cellType
             }
-            distr[[file]][[cellType]] <-
-                apply(flowCore::exprs(ff)[selection,
-                                          channels],
-                      2,
-                      function(x){
-                          graphics::hist(x,
-                                         breaks = seq(minRange,maxRange,by=binSize),
-                                         plot = FALSE)$counts
-                      })
+            if (sum(selection) >= manualThreshold){
+                distr[[file]][[cellType]] <-
+                    apply(flowCore::exprs(ff)[selection, channels],
+                          2,
+                          function(x) {
+                              graphics::hist(x,
+                                             breaks = seq(minRange, maxRange, by = binSize),
+                                             plot = FALSE)$counts
+                          })
+                colnames(distr[[file]][[cellType]]) <- prettyColnames
+            } else {
+                distr[[file]][[cellType]] <- matrix(data = NA,
+                                                    nrow = length(seq(minRange, maxRange, by = binSize))-1,
+                                                    ncol = length(channels),
+                                                    dimnames = list(NULL, prettyColnames))
+            }
+
+
             any(distr[[file]][[cellType]] != 0)
         }
     }
-
     distances <- list()
-    for(cellType in cellTypes){
+    for (cellType in cellTypes) {
         distances[[cellType]] <- list()
-        for(marker in channels){
-            distances[[cellType]][[marker]] <- matrix(NA,
-                                                      nrow=length(files),
-                                                      ncol=length(files),
-                                                      dimnames=list(files,
-                                                                    files))
-
-            for(i in seq_along(files)[-length(files)]){
+        for (name in prettyColnames) {
+            distances[[cellType]][[name]] <- matrix(NA, nrow = length(files),
+                                                    ncol = length(files), dimnames = list(files,
+                                                                                          files))
+            for (i in seq_along(files)[-length(files)]) {
                 file1 <- files[i]
-                for(j in seq(i+1,length(files))){
+                for (j in seq(i + 1, length(files))) {
                     file2 <- files[j]
-                    distances[[cellType]][[marker]][file1,file2] <-
-                        emdist::emd2d(
-                            matrix(distr[[file1]][[cellType]][,marker]),
-                            matrix(distr[[file2]][[cellType]][,marker]))
+                    distances[[cellType]][[name]][file1, file2] <-
+                        emdist::emd2d(matrix(distr[[file1]][[cellType]][, name]),
+                                      matrix(distr[[file2]][[cellType]][, name]))
                 }
             }
         }
     }
-
-    comparison <- matrix(NA,
-                         nrow=length(cellTypes),
-                         ncol=length(channels),
-                         dimnames = list(cellTypes, channels))
-
-    for(cellType in cellTypes){
-        for(channel in channels){
-            comparison[cellType, channel] <- max(distances[[cellType]][[channel]],
-                                               na.rm = TRUE)
+    comparison <- matrix(NA, nrow = length(cellTypes), ncol = length(channels),
+                         dimnames = list(cellTypes, prettyColnames))
+    for (cellType in cellTypes) {
+        for (name in prettyColnames) {
+            comparison[cellType, name] <- max(distances[[cellType]][[name]],
+                                              na.rm = TRUE)
         }
     }
-
-    if(return_all){
+    if (return_all) {
         return(named.list(distr, distances, comparison))
     } else {
         return(comparison)
