@@ -370,6 +370,7 @@ emdEvaluation <- function(files,
                                              plot = FALSE)$counts
                           })
                 colnames(distr[[file]][[cellType]]) <- prettyColnames
+                distr[[file]][[cellType]] <- distr[[file]][[cellType]]/sum(selection)
             } else {
                 distr[[file]][[cellType]] <- matrix(data = NA,
                                                     nrow = length(seq(minRange, maxRange, by = binSize))-1,
