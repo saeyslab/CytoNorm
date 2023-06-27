@@ -338,7 +338,7 @@ emdEvaluation <- function(files,
     if (is.null(manual)) {
         cellTypes <- c("AllCells")
     } else {
-        cellTypes <- levels(manual[[1]])
+        cellTypes <- c("AllCells", levels(manual[[1]]))
     }
     prettyColnames <- NULL
     distr <- list()
@@ -354,7 +354,7 @@ emdEvaluation <- function(files,
             ff <- flowCore::transform(ff, transformList)
         }
         for (cellType in cellTypes) {
-            if (is.null(manual)) {
+            if (is.null(manual) | cellType == "AllCells") {
                 selection <- seq_len(flowCore::nrow(ff))
             } else {
                 selection <- manual[[gsub(prefix, "", gsub(".*/",
@@ -414,3 +414,112 @@ emdEvaluation <- function(files,
         return(comparison)
     }
 }
+
+
+#' madEvaluation
+#'
+#' Evaluate whether you lose biological information by checking whether the
+#' MAD stays similar before and after normalization.
+#'
+#' @param files     Full paths of to the fcs files of the control samples.
+#' @param channels  Channels to evaluate (corresponding with the column
+#'                  names of the flow frame)
+#' @param transformList Transformation list to pass to the flowCore
+#'                  \code{transform} function. Default NULL
+#' @param prefix    Prefix present in the files, which will be removed to match
+#'                  the manual list.
+#' @param manual    A list which contains for every file a factor array. These
+#'                  arrays contain a cell label for every cell in the files. All
+#'                  arrays should have the same levels. Default = NULL, all
+#'                  cells are evaluated together.
+#' @param return_all If TRUE, individual MAD values are returned
+#'                   as well. Default = FALSE.
+#'
+#' @return A matrix in which the rows represent the cell types, the columns
+#' reprents the markers and the values represent the median MAD values for
+#' the distributions of all files
+#'
+#' @examples
+#'    # Describe file names
+#'    dir <- system.file("extdata",package="CytoNorm")
+#'    fileNames <- c("Gates_PTLG021_Unstim_Control_1.fcs",
+#'                    "Gates_PTLG028_Unstim_Control_1.fcs")
+#'    labels <- c("PTLG021","PTLG028")
+#'    ff <- flowCore::read.FCS(file.path(dir,fileNames[1]))
+#'    channelsToNormalize <- flowCore::colnames(ff)[c(10, 11, 14, 16:35, 37, 39:51)]
+#'
+#'    # Build transform list
+#'    transformList <- flowCore::transformList(channelsToNormalize,
+#'                                             cytofTransform)
+#'    res <- madEvaluation(file.path(dir,fileNames),
+#'                         transformList = transformList,
+#'                         channelsToNormalize)
+#'
+#' @export
+madEvaluation <- function (files,
+                           channels,
+                           transformList = NULL,
+                           prefix = "^Norm_",
+                           manual = NULL,
+                           return_all = FALSE)
+{
+    if (is.null(manual)) {
+        cellTypes <- c("AllCells")
+    } else {
+        cellTypes <- c("AllCells", levels(manual[[1]]))
+    }
+    mad_values <- list()
+    for (file in files) {
+        mad_values[[file]] <- list()
+        ff <- flowCore::read.FCS(file)
+        if (!is.null(transformList))
+            ff <- flowCore::transform(ff, transformList)
+        for (cellType in cellTypes) {
+            if (is.null(manual) | cellType == "AllCells") {
+                selection <- seq_len(flowCore::nrow(ff))
+            } else {
+                selection <- manual[[gsub(prefix, "", gsub(".*/",
+                                                             "", file))]] == cellType
+            }
+            if (sum(selection) > 1){
+                mad_values[[file]][[cellType]] <- apply(flowCore::exprs(ff)[selection,
+                                                                            channels], 2, function(x) {
+                                                                                mad(x)
+                                                                            })
+            } else {
+                mad_values[[file]][[cellType]] <- NA
+            }
+            any(mad_values[[file]][[cellType]] != 0)
+        }
+    }
+
+    mad_per_celltype <- list()
+
+    for (cellType in cellTypes){
+
+        cell_matr <- matrix(NA, nrow = length(files),
+                            ncol = length(channels), dimnames = list(files,
+                                                                     channels))
+
+        for (x in seq_along(mad_values)){
+
+            cell_matr[x,] <-
+                mad_values[[x]][[grep(cellType,names(mad_values[[x]]),
+                                      fixed = TRUE)]]
+        }
+
+        mad_per_celltype[[cellType]] <- cell_matr
+    }
+
+    comparison <- t(sapply(mad_per_celltype, function(x){
+        apply(x, 2, median, na.rm = FALSE)
+    }))
+
+    if (return_all) {
+        return(named.list(mad_values, mad_per_celltype, comparison))
+    }
+    else {
+        return(comparison)
+    }
+}
+

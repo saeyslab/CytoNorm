@@ -127,7 +127,7 @@ prepareFlowSOM <- function(files,
 #'                         Default = \code{\link{QuantileNorm.train}}
 #' @param normParams Parameters to pass to the normalization method. Default,
 #'                   assuming \code{\link{QuantileNorm.train}}:
-#'                   list(nQ = 21)). nQ is the number of quantiles
+#'                   list(nQ = 101)). nQ is the number of quantiles
 #'                   to use.
 #' @param recompute If FALSE, will try to reuse previously saved FlowSOM model.
 #'                  If so, a warning message will be printed. Default = FALSE.
@@ -213,6 +213,9 @@ CytoNorm.train <- function(files,
 
     if(recompute | !file.exists(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))){
 
+        if(!"nCells" %in% names(FlowSOM.params)){
+            stop("FlowSOM.params should contain the parameter nCells.")
+        }
         nCells <- FlowSOM.params[["nCells"]]
         if(is.null(FlowSOM.params[["channels"]])){
             FlowSOM.channels <- channels
@@ -528,10 +531,40 @@ CytoNorm.normalize <- function(model,
 
 
             # Adapt to real min and max because this gets strange values otherwise
-            ff@parameters@data[,"minRange"] <- apply(ff@exprs, 2, min)
-            ff@parameters@data[,"maxRange"] <- apply(ff@exprs, 2, max)
-            ff@parameters@data[,"range"] <- ff@parameters@data[,"maxRange"] -
-                ff@parameters@data[,"minRange"]
+
+                # params <- flowCore::parameters(fcs)
+                # pd <-NULL
+                # cols <- as.vector(pd$name)
+                # idxs <- match(cols, pd$name)
+                # if (any(is.na(idxs))) {
+                #     stop("Invalid column specifier")
+                # }
+                # keyval <- list()
+                # for (channel_number in 1:ncol(exprs)){
+                #     channel_name<-colnames(exprs)[channel_number]
+                #     if (is.null(desc1))
+                #         desc1<-colnames(exprs)[channel_number]
+                #     channel_id <- paste("$P", channel_number, sep = "")
+                #     channel_range <- max(exprs[,channel_number]) + 1
+                #     channel_min<-min(0,min(exprs[,channel_number])-1)
+                #     plist <- matrix(c(channel_name, desc1[channel_number], channel_range, channel_min, channel_range - 1))
+                #     rownames(plist) <- c("name", "desc", "range", "minRange", "maxRange")
+                #     colnames(plist) <- c(channel_id)
+                #     pd <- rbind(pd, t(plist))
+                #     keyval[[paste("$P", channel_number, "B", sep = "")]] <- "32"
+                #     keyval[[paste("$P", channel_number, "R", sep = "")]] <- toString(channel_range)
+                #     keyval[[paste("$P", channel_number, "E", sep = "")]] <- "0,0"
+                #     keyval[[paste("$P", channel_number, "N", sep = "")]] <- channel_name
+                #     keyval[[paste("$P", channel_number, "S", sep = "")]] <- channel_name
+                # }
+
+
+
+
+            ff@parameters@data[,"minRange"] <- floor(pmin(0, apply(ff@exprs, 2, min)))
+            ff@parameters@data[,"maxRange"] <- ceiling(apply(ff@exprs, 2, max))
+            ff@parameters@data[,"range"] <- pmax(ff@parameters@data[,"maxRange"] + 1 ,
+                                                 ff@parameters@data[,"maxRange"] - ff@parameters@data[,"minRange"])
             for(i in seq_len(flowCore::ncol(ff))){
                 ff@description[[paste0("$P",i,"R")]] <- ff@parameters@data[i,"range"]
             }
@@ -562,5 +595,55 @@ CytoNorm.normalize <- function(model,
     if(is(files, "flowSet")) {
         res <- flowSet(res)
         return(res)
+    }
+}
+
+
+#' Extract quantiles used by a previous CytoNorm model
+#'
+#' Can be of interest to pass as goal quantiles to a new model.
+#'
+#' @param model Model trained with CytoNorm.train
+#' @param type "ref" for goal quantiles or batch label
+#'
+#' @examples
+#' dir <- system.file("extdata", package = "CytoNorm")
+#' files <- list.files(dir, pattern = "fcs$")
+#' data <- data.frame(File = files,
+#'                    Path = file.path(dir, files),
+#'                    Type = stringr::str_match(files, "_([12]).fcs")[,2],
+#'                    Batch = stringr::str_match(files, "PTLG[0-9]*")[,1],
+#'                    stringsAsFactors = FALSE)
+#' data$Type <- c("1" = "Train", "2" = "Validation")[data$Type]
+#' train_data <- dplyr::filter(data, Type == "Train")
+#' validation_data <- dplyr::filter(data, Type == "Validation")
+#'
+#' ff <- flowCore::read.FCS(data$Path[1])
+#' channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
+#' transformList <- flowCore::transformList(channels,
+#'                                          cytofTransform)
+#' transformList.reverse <- flowCore::transformList(channels,
+#'                                                  cytofTransform.reverse)
+#'
+#' model <- CytoNorm.train(files = train_data$Path,
+#'                         labels = train_data$Batch,
+#'                         channels = channels,
+#'                         transformList = transformList,
+#'                         FlowSOM.params = list(nCells = 10000, #1000000
+#'                                               xdim = 10,
+#'                                               ydim = 10,
+#'                                               nClus = 10,
+#'                                               scale = FALSE),
+#'                         normParams = list(nQ = 101),
+#'                         seed = 1)
+#'
+#' quantiles <- getCytoNormQuantiles(model)
+#'
+#' @export
+getCytoNormQuantiles <- function(model, type = "ref"){
+    if(type == "ref"){
+        lapply(model$clusterRes, function(x) x$refQuantiles)
+    } else {
+        lapply(model$clusterRes, function(x) x$quantiles[[type]])
     }
 }

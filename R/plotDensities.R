@@ -64,32 +64,32 @@
 #'
 #' channels_to_plot <- c("Er170Di", "La139Di")
 #' plots <- plotDensities(input = c(original, normalized),
+#'                        model = model,
 #'                        channels = channels_to_plot,
 #'                        colors = c("blue", "red", "green"),
 #'                        transformList = transformList)
 #'
-#' p <- ggpubr::ggarrange(ggpubr::ggarrange(plotlist = plots[1:(2*length(channels_to_plot))],
+#' p <- ggpubr::ggarrange(ggpubr::ggarrange(plotlist = plots[1:(length(plots)-1)],
 #'                                          ncol = 2,
-#'                                          nrow = length(channels_to_plot)),
+#'                                          nrow = 2*length(channels_to_plot)),
 #'                        ggpubr::ggarrange(ggpubr::as_ggplot(plots[[length(plots)]])),
-#'                        ncol = 1, nrow = 2, heights = c(10,0.5))
-#' print(ggpubr::annotate_figure(p,
-#'                       top = paste0("Before normalization",
-#'                                    "                              ",
-#'                                    "After normalization")))
+#'                        ncol = 1, nrow = 2, heights = c(10,1))
+#'
 #' @importFrom methods is
-#' @importFrom flowCore read.FCS transform
-#' @importFrom FlowSOM AggregateFlowFrames
+#' @importFrom flowCore read.FCS transform flowFrame
+#' @importFrom FlowSOM AggregateFlowFrames NewData GetMetaclusters
 #' @importFrom dplyr sym
 #' @importFrom ggplot2 ggplot aes stat_density scale_color_manual xlab
-#'                     theme_minimal theme .data
+#'                     theme_minimal theme .data xlim
 #' @importFrom ggpubr get_legend
 #'
 #' @export
 plotDensities <- function(input, # list with 4 elements B1, B2, B1_norm, B2_norm
                           channels,
                           colors,
+                          model = NULL,
                           transformList = NULL,
+                          show_goal = FALSE,
                           suffix = c("original" = "",
                                      "normalized" = "_norm")){
 
@@ -102,16 +102,18 @@ plotDensities <- function(input, # list with 4 elements B1, B2, B1_norm, B2_norm
     for(batch in batch_names){
         for(type in c("original", "normalized")){
             i <- paste0(batch, suffix[type])
-            if(is.character(input[[i]])){
-                if(length(input[[i]] > 1)){
-                    set.seed(2023)
-                    data[[type]][[batch]] <- FlowSOM::AggregateFlowFrames(fileNames = input[[i]],
-                                                              cTotal = length(input[[i]])*10000)
-                } else {
-                    data[[type]][[batch]] <- flowCore::read.FCS(input[[i]])
+            if(i %in% names(input)){
+                if(is.character(input[[i]])){
+                    if(length(input[[i]] > 1)){
+                        set.seed(2023)
+                        data[[type]][[batch]] <- FlowSOM::AggregateFlowFrames(fileNames = input[[i]],
+                                                                              cTotal = length(input[[i]])*10000)
+                    } else {
+                        data[[type]][[batch]] <- flowCore::read.FCS(input[[i]], truncate_max_range = FALSE)
+                    }
+                } else if(methods::is(input[[i]], "flowFrame")) {
+                    data[[type]][[batch]] <- input[[i]]
                 }
-            } else if(methods::is(input[[i]], "flowFrame")) {
-                data[[type]][[batch]] <- input[[i]]
             }
             if(!is.null(transformList)){
                 data[[type]][[batch]] <- flowCore::transform(data[[type]][[batch]],
@@ -123,6 +125,7 @@ plotDensities <- function(input, # list with 4 elements B1, B2, B1_norm, B2_norm
     # Make dfs
     dfs <- list()
     for(type in c("original", "normalized")){
+        print(type)
         dfs[[type]] <- data.frame(do.call(rbind,
                                           lapply(data[[type]],
                                                  function(x) flowCore::exprs(x))),
@@ -131,27 +134,97 @@ plotDensities <- function(input, # list with 4 elements B1, B2, B1_norm, B2_norm
                                            function(i) rep(x = i,
                                                            times = nrow(data[[type]][[i]]))))
 
-        dfs[[type]] <- dfs[[type]][,c(channels, "File", "Batch")]
+        if(!is.null(model) & type == "original"){ #!is.null(dfs[[type]])){
+            mapped <- FlowSOM::NewData(model$fsom,
+                                       as.matrix(dfs[[type]][model$fsom$map$colsUsed]))
+            dfs[[type]][,"Cluster"] <- FlowSOM::GetMetaclusters(mapped)
+            dfs[[type]] <- dfs[[type]][,c(channels, "File", "Batch", "Cluster")]
+        } else {
+            dfs[[type]] <- dfs[[type]][,c(channels, "File", "Batch")]
+        }
+
+    }
+
+    if(!is.null(model)){
+        dfs[["normalized"]][,"Cluster"] <- dfs[["original"]][,"Cluster"]
+    }
+
+    if(show_goal){
+        if(is.null(model)){
+            stop("To show the goal, a model should be provided")
+        }
+        quantiles <- getCytoNormQuantiles(model)
+
     }
 
     # Plot
     plotlist <- list()
     for (channel in channels){
+        x_range <- c(min(sapply(dfs, function(df) min(df[[channel]], na.rm = TRUE))),
+                     max(sapply(dfs, function(df) max(df[[channel]], na.rm = TRUE))))
         for(type in c("original", "normalized")){
             df <- dfs[[type]]
-            p <- ggplot2::ggplot(df, ggplot2::aes(x=!!dplyr::sym(channel), color = .data$Batch)) +
-                ggplot2::stat_density(ggplot2::aes(group = paste(.data$Batch, .data$File)),
+            p <- ggplot2::ggplot(df, ggplot2::aes(x=!!dplyr::sym(channel),
+                                                  color = .data$Batch)) +
+                ggplot2::stat_density(ggplot2::aes(group = paste(.data$Batch,
+                                                                 .data$File)),
                                       geom = "line", position = "identity",
                                       alpha = 0.2)+
                 ggplot2::stat_density(geom = "line", position = "identity",
                                       linewidth = 0.7) +
                 ggplot2::scale_color_manual(values = colors)+
-                ggplot2::xlab(channel) +
-                ggplot2::theme_minimal()
+                ggplot2::xlab(paste0(FlowSOM::GetMarkers(data[["original"]][[1]], channel),
+                                     " <", channel, ">")) +
+                ggplot2::ylab(type) +
+                ggplot2::theme_minimal() +
+                ggplot2::xlim(x_range)
+
             leg <- ggpubr::get_legend(p)
             p <- p + ggplot2::theme(legend.position = "none")
             plotlist[[paste(channel,type)]] <- p
+            if(!is.null(model)){
+                plotlist[[paste(channel,type,"per cluster")]] <-
+                    ggplot2::ggplot(df, ggplot2::aes(x=!!dplyr::sym(channel),
+                                                     color = .data$Batch))
+
+                if(show_goal){
+                    quantiles_df <- do.call(rbind,
+                                            lapply(seq_along(quantiles),
+                                                   function(x){
+                                                       df_tmp <- data.frame(Value = 1/2 * (quantiles[[x]][-1,channel] + quantiles[[x]][-nrow(quantiles[[x]]),channel]),
+                                                                            Density = 1 / nrow(quantiles[[x]])/ diff(quantiles[[x]][,channel]),
+                                                                            Cluster = x)
+                                                       df_tmp$Density_smooth <- stats::splinefun(df_tmp$Value, df_tmp$Density, method = "monoH.FC")(df_tmp$Value)
+                                                       df_tmp
+                                                   }))
+                    plotlist[[paste(channel,type,"per cluster")]] <-
+                        plotlist[[paste(channel,type,"per cluster")]] +
+                        ggplot2::geom_line(aes(x = Value, y = Density_smooth),
+                                           color = "black",
+                                           data = quantiles_df)
+                }
+
+
+                plotlist[[paste(channel,type,"per cluster")]] <-
+                    plotlist[[paste(channel,type,"per cluster")]] +
+                    ggplot2::stat_density(ggplot2::aes(group = paste(.data$Batch,
+                                                                     .data$File)),
+                                          geom = "line", position = "identity",
+                                          alpha = 0.2)+
+                    ggplot2::stat_density(geom = "line", position = "identity",
+                                          linewidth = 0.7) +
+                    ggplot2::scale_color_manual(values = colors) +
+                    ggplot2::xlab(paste0(FlowSOM::GetMarkers(data[["original"]][[1]], channel),
+                                         " <", channel, ">")) +
+                    ggplot2::ylab(type) +
+                    ggplot2::theme_minimal() +
+                    ggplot2::xlim(x_range) +
+                    ggplot2::facet_grid(~ .data$Cluster)
+
+            }
         }
+
+
     }
 
     plotlist[["legend"]] <- leg
