@@ -113,6 +113,7 @@ getDensities <- function(files,
 #' @param cluster_values Vector with all amounts of clusters to test
 #' @param plot           If TRUE, a plot of the CV values is generated
 #' @param verbose        If TRUE, extra progress updates are printed
+#' @param seed           Seed for reproducible results. Default = 1.
 #'
 #' @examples
 #'
@@ -148,7 +149,8 @@ getDensities <- function(files,
 testCV <- function(fsom,
                    cluster_values = 3:50,
                    plot = TRUE,
-                   verbose = FALSE) {
+                   verbose = FALSE,
+                   seed = 1) {
 
     nClus <- fsom$map$nNodes
     cluster_labels <- FlowSOM::GetClusters(fsom)
@@ -160,7 +162,7 @@ testCV <- function(fsom,
         meta_cl[[as.character(mc)]] <-
             FlowSOM::metaClustering_consensus(fsom$map$codes,
                                               mc,
-                                              seed = 1)
+                                              seed = seed)
     }
     meta_cl[[as.character(nClus)]] <- seq_len(nClus)
 
