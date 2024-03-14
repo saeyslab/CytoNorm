@@ -5,7 +5,7 @@
 #'                 batch_norm. For a batch, the input can be either one or more
 #'                 paths to fcs files or a flowFrame.
 #' @param channels Channels to plot
-#' @param colors Vector with a color for each batch
+#' @param colors Optional vector with a color for each batch
 #' @param transformList In case the data from the fcs files still needs to be
 #'                      transformed. Default NULL, in which case no transformation
 #'                      happens.
@@ -86,7 +86,7 @@
 #' @export
 plotDensities <- function(input, # list with 4 elements B1, B2, B1_norm, B2_norm
                           channels,
-                          colors,
+                          colors = NULL,
                           model = NULL,
                           transformList = NULL,
                           show_goal = FALSE,
@@ -172,12 +172,16 @@ plotDensities <- function(input, # list with 4 elements B1, B2, B1_norm, B2_norm
                                       alpha = 0.2)+
                 ggplot2::stat_density(geom = "line", position = "identity",
                                       linewidth = 0.7) +
-                ggplot2::scale_color_manual(values = colors)+
                 ggplot2::xlab(paste0(FlowSOM::GetMarkers(data[["original"]][[1]], channel),
                                      " <", channel, ">")) +
                 ggplot2::ylab(type) +
                 ggplot2::theme_minimal() +
                 ggplot2::xlim(x_range)
+            
+            if (!is.null(colors)){
+              p <- p +
+                ggplot2::scale_color_manual(values = colors)
+            }
 
             leg <- ggpubr::get_legend(p)
             p <- p + ggplot2::theme(legend.position = "none")
@@ -213,14 +217,20 @@ plotDensities <- function(input, # list with 4 elements B1, B2, B1_norm, B2_norm
                                           alpha = 0.2)+
                     ggplot2::stat_density(geom = "line", position = "identity",
                                           linewidth = 0.7) +
-                    ggplot2::scale_color_manual(values = colors) +
                     ggplot2::xlab(paste0(FlowSOM::GetMarkers(data[["original"]][[1]], channel),
                                          " <", channel, ">")) +
                     ggplot2::ylab(type) +
                     ggplot2::theme_minimal() +
                     ggplot2::xlim(x_range) +
-                    ggplot2::facet_grid(~ .data$Cluster)
-
+                    ggplot2::facet_grid(~ .data$Cluster) + 
+                    ggplot2::theme(legend.position = "none")
+                
+                if (!is.null(colors)){
+                  plotlist[[paste(channel,type,"per cluster")]] <- plotlist[[paste(channel,type,"per cluster")]] +
+                    ggplot2::scale_color_manual(values = colors)
+                }
+                
+                
             }
         }
 

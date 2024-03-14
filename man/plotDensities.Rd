@@ -7,8 +7,10 @@
 plotDensities(
   input,
   channels,
-  colors,
+  colors = NULL,
+  model = NULL,
   transformList = NULL,
+  show_goal = FALSE,
   suffix = c(original = "", normalized = "_norm")
 )
 }
@@ -19,7 +21,7 @@ paths to fcs files or a flowFrame.}
 
 \item{channels}{Channels to plot}
 
-\item{colors}{Vector with a color for each batch}
+\item{colors}{Optional vector with a color for each batch}
 
 \item{transformList}{In case the data from the fcs files still needs to be
 transformed. Default NULL, in which case no transformation
@@ -84,17 +86,15 @@ normalized <- list("PTLG021_norm" = paste0("Normalized/Norm_",validation_data$Fi
 
 channels_to_plot <- c("Er170Di", "La139Di")
 plots <- plotDensities(input = c(original, normalized),
+                       model = model,
                        channels = channels_to_plot,
                        colors = c("blue", "red", "green"),
                        transformList = transformList)
 
-p <- ggpubr::ggarrange(ggpubr::ggarrange(plotlist = plots[1:(2*length(channels_to_plot))],
+p <- ggpubr::ggarrange(ggpubr::ggarrange(plotlist = plots[1:(length(plots)-1)],
                                          ncol = 2,
-                                         nrow = length(channels_to_plot)),
+                                         nrow = 2*length(channels_to_plot)),
                        ggpubr::ggarrange(ggpubr::as_ggplot(plots[[length(plots)]])),
-                       ncol = 1, nrow = 2, heights = c(10,0.5))
-print(ggpubr::annotate_figure(p,
-                      top = paste0("Before normalization",
-                                   "                              ",
-                                   "After normalization")))
+                       ncol = 1, nrow = 2, heights = c(10,1))
+
 }

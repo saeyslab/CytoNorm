@@ -45,7 +45,7 @@ Default = \code{\link{QuantileNorm.train}}}
 
 \item{normParams}{Parameters to pass to the normalization method. Default,
 assuming \code{\link{QuantileNorm.train}}:
-list(nQ = 21)). nQ is the number of quantiles
+list(nQ = 101)). nQ is the number of quantiles
 to use.}
 
 \item{seed}{Set a seed for reproducable results.}
