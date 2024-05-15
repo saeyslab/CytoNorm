@@ -64,7 +64,7 @@ getQuantiles <- function(files,
     quantiles <- list()
 
     if (is.null(quantileValues)) {
-        quantileValues <- c(0, (1:(nQ-1))/(nQ-1))
+        quantileValues <- ((1:(nQ+1))/(nQ+1))[-(nQ+1)]
     } else {
         nQ <- length(quantileValues)
     }
