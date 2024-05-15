@@ -46,7 +46,7 @@
 #' @export
 getQuantiles <- function(files,
                          channels,
-                         nQ = 101,
+                         nQ = 99,
                          minCells = 50,
                          quantileValues = NULL,
                          transformList = NULL,
