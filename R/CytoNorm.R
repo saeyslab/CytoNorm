@@ -217,12 +217,14 @@ CytoNorm.train <- function(files,
             stop("FlowSOM.params should contain the parameter nCells.")
         }
         nCells <- FlowSOM.params[["nCells"]]
-        if(is.null(FlowSOM.params[["channels"]])){
-            FlowSOM.channels <- channels
-        } else {
-            FlowSOM.channels <- FlowSOM.params[["channels"]]
+        if(is.null(c(FlowSOM.params[["channels"]], FlowSOM.params[["colsToUse"]]))){
+          FlowSOM.channels <- channels
+        } else if(!is.null(FlowSOM.params[["channels"]])){
+          FlowSOM.channels <- FlowSOM.params[["channels"]]
+        } else if(!is.null(FlowSOM.params[["colsToUse"]])){
+          FlowSOM.channels <- FlowSOM.params[["colsToUse"]]
         }
-        FlowSOM.params <- FlowSOM.params[grep("nCells|channels",
+        FlowSOM.params <- FlowSOM.params[grep("nCells|channels|colsToUse",
                                               names(FlowSOM.params),
                                               invert = TRUE)]
         fsom <- prepareFlowSOM(files = files,
