@@ -7,7 +7,7 @@
 getQuantiles(
   files,
   channels,
-  nQ = 101,
+  nQ = 99,
   minCells = 50,
   quantileValues = NULL,
   transformList = NULL,
@@ -23,7 +23,7 @@ getQuantiles(
 
 \item{channels}{Names of the channels to compute the quantiles for}
 
-\item{nQ}{Number of quantiles to compute Default = 101, which
+\item{nQ}{Number of quantiles to compute Default = 99, which
 results in quantiles for every percent of the data.
 Ignored if quantileValues is given.}
 

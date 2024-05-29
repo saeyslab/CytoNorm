@@ -23,9 +23,15 @@ paths to fcs files or a flowFrame.}
 
 \item{colors}{Optional vector with a color for each batch}
 
+\item{model}{CytoNorm model to split out the normalized density plots per 
+FlowSOM meta-cluster. Optional.}
+
 \item{transformList}{In case the data from the fcs files still needs to be
 transformed. Default NULL, in which case no transformation
 happens.}
+
+\item{show_goal}{If a 'model' is provided, it is possible to show the model's 
+goal distribution.}
 
 \item{suffix}{Suffixes used to distinguish the original from the normalized files.
 Default is c("original" = "", "normalized" = "_norm")}

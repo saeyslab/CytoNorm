@@ -42,6 +42,9 @@ cells are evaluated together.}
 
 \item{return_all}{If TRUE, distributions and pairwise distances are returned
 as well. Default = FALSE.}
+
+\item{manualThreshold}{Minimum number of cells to calculate the EMD. 
+Default = 2}
 }
 \value{
 A matrix in which the rows represent the cell types, the columns

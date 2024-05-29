@@ -459,6 +459,8 @@ emdEvaluation <- function(files,
 #'                         transformList = transformList,
 #'                         channelsToNormalize)
 #'
+#' @importFrom stats mad median
+#' 
 #' @export
 madEvaluation <- function (files,
                            channels,

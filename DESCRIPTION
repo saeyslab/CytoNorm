@@ -26,4 +26,4 @@ Suggests:
     BiocStyle
 License: GPL (>= 2)
 LazyData: TRUE
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
