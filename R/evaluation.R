@@ -304,6 +304,8 @@ PlotOverviewCV <- function(fsom, cv_res, max_cv = 2.5, show_cv = 1.5){
 #' @param maxRange  Maximum to approximate distribution. Default = 100.
 #' @param return_all If TRUE, distributions and pairwise distances are returned
 #'                   as well. Default = FALSE.
+#' @param manualThreshold Minimum number of cells to calculate the EMD. 
+#'                  Default = 2 
 #'
 #' @return A matrix in which the rows represent the cell types, the columns
 #' reprents the markers and the values represent the maximal earth movers

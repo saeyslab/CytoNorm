@@ -11,6 +11,10 @@
 #'                      happens.
 #' @param suffix Suffixes used to distinguish the original from the normalized files.
 #'               Default is c("original" = "", "normalized" = "_norm")
+#' @param model CytoNorm model to split out the normalized density plots per 
+#'              FlowSOM meta-cluster. Optional. 
+#' @param show_goal If a 'model' is provided, it is possible to show the model's 
+#'                  goal distribution.
 #'
 #' @return  List with 2 plots per channel
 #'

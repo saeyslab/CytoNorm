@@ -4,7 +4,7 @@
 #' @param channels    Names of the channels to compute the quantiles for
 #' @param transformList   Transformation list to pass to the flowCore
 #'                    \code{transform} function
-#' @param nQ          Number of quantiles to compute Default = 101, which
+#' @param nQ          Number of quantiles to compute Default = 99, which
 #'                    results in quantiles for every percent of the data.
 #'                    Ignored if quantileValues is given.
 #' @param minCells    Minimum number of cells required to compute trust-worthy
