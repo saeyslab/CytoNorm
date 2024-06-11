@@ -1,9 +1,11 @@
 Package: CytoNorm
 Type: Package
 Title: Normalisation of cytometry data measured across multiple batches
-Version: 2.0.1
-Authors@R: person("Sofie", "Van Gassen", email = "sofie.vangassen@ugent.be", 
-                  role = c("aut", "cre"))
+Version: 2.0.2
+Authors@R: c(person("Sofie", "Van Gassen", role = c("aut", "cre"),
+            email = "sofie.vangassen@ugent.be"), 
+            person("Katrien", "Quintelier", role = c("aut"),
+            email = "katrienL.Quintelier@ugent.be"))
 Description: This package can be used to normalize cytometry samples when 
              a control sample is taken along in each of the batches. 
              This is done by first identifying multiple clusters/cell types, 
@@ -18,7 +20,7 @@ Imports:
     dplyr,
     stringr,
     pheatmap,
-    ggplot2,
+    ggplot2 (>= 3.5.1),
     ggpubr,
     methods,
     gridExtra

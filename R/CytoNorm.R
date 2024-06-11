@@ -127,8 +127,8 @@ prepareFlowSOM <- function(files,
 #'                         Default = \code{\link{QuantileNorm.train}}
 #' @param normParams Parameters to pass to the normalization method. Default,
 #'                   assuming \code{\link{QuantileNorm.train}}:
-#'                   list(nQ = 101)). nQ is the number of quantiles
-#'                   to use.
+#'                   list(nQ = 99)). nQ is the number of quantiles
+#'                   to use, 0.01 to 0.99 by default.
 #' @param recompute If FALSE, will try to reuse previously saved FlowSOM model.
 #'                  If so, a warning message will be printed. Default = FALSE.
 #' @param ...         Additional arguments to pass to read.FCS
@@ -168,7 +168,7 @@ prepareFlowSOM <- function(files,
 #'                                               ydim = 10,
 #'                                               nClus = 10,
 #'                                               scale = FALSE),
-#'                         normParams = list(nQ = 101),
+#'                         normParams = list(nQ = 99),
 #'                         seed = 1)
 #'
 #' CytoNorm.normalize(model = model,
@@ -192,7 +192,7 @@ CytoNorm.train <- function(files,
                                                  nClus = 10,
                                                  scale = FALSE),
                            normMethod.train = QuantileNorm.train,
-                           normParams = list(nQ = 101),
+                           normParams = list(nQ = 99),
                            seed = NULL,
                            clean = TRUE,
                            plot = FALSE,
@@ -391,7 +391,7 @@ CytoNorm.train <- function(files,
 #'                                               ydim = 15,
 #'                                               nClus = 10,
 #'                                               scale = FALSE),
-#'                         normParams = list(nQ = 101),
+#'                         normParams = list(nQ = 99),
 #'                         seed = 1,
 #'                         verbose = TRUE)
 #'
@@ -636,7 +636,7 @@ CytoNorm.normalize <- function(model,
 #'                                               ydim = 10,
 #'                                               nClus = 10,
 #'                                               scale = FALSE),
-#'                         normParams = list(nQ = 101),
+#'                         normParams = list(nQ = 99),
 #'                         seed = 1)
 #'
 #' quantiles <- getCytoNormQuantiles(model)

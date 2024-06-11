@@ -12,7 +12,7 @@ CytoNorm.train(
   outputDir = "./tmp",
   FlowSOM.params = list(nCells = 1e+06, xdim = 15, ydim = 15, nClus = 10, scale = FALSE),
   normMethod.train = QuantileNorm.train,
-  normParams = list(nQ = 101),
+  normParams = list(nQ = 99),
   seed = NULL,
   clean = TRUE,
   plot = FALSE,
@@ -45,8 +45,8 @@ Default = \code{\link{QuantileNorm.train}}}
 
 \item{normParams}{Parameters to pass to the normalization method. Default,
 assuming \code{\link{QuantileNorm.train}}:
-list(nQ = 101)). nQ is the number of quantiles
-to use.}
+list(nQ = 99)). nQ is the number of quantiles
+to use, 0.01 to 0.99 by default.}
 
 \item{seed}{Set a seed for reproducable results.}
 
@@ -110,7 +110,7 @@ model <- CytoNorm.train(files = train_data$Path,
                                               ydim = 10,
                                               nClus = 10,
                                               scale = FALSE),
-                        normParams = list(nQ = 101),
+                        normParams = list(nQ = 99),
                         seed = 1)
 
 CytoNorm.normalize(model = model,
