@@ -159,7 +159,7 @@ getQuantiles <- function(files,
 #' @param channels    Names of the channels to normalize
 #' @param transformList   Transformation list to pass to the flowCore
 #'                    \code{transform} function
-#' @param nQ          Number of quantiles to use. Default = 101, which results in
+#' @param nQ          Number of quantiles to use. Default = 99, which results in
 #'                    quantiles for every percent of the data.
 #' @param quantileValues If specified, it should be a vector of length nQ with
 #'                        values between 0 and 1, giving the percentages at
@@ -197,27 +197,27 @@ getQuantiles <- function(files,
 #' transformList <- flowCore::transformList(channels,
 #'                                          cytofTransform)
 #'
-#' png("nQ101.png",
+#' png("nQ99.png",
 #'     width = length(channels) * 300,
 #'     height = (nrow(train_data) * 2 + 1) * 300)
-#' model_nQ_101 <- QuantileNorm.train(
+#' model_nQ_99 <- QuantileNorm.train(
 #'   files = train_data$Path,
 #'   labels = train_data$Batch,
 #'   channels = channels,
 #'   transformList = transformList,
-#'   nQ = 101,
+#'   nQ = 99,
 #'   plot = TRUE)
 #' dev.off()
 #'
-#' png("nQ101_limited.png",
+#' png("nQ99_limited.png",
 #'     width = length(channels) * 300,
 #'     height = (nrow(train_data) * 2 + 1) * 300)
-#' model_nQ_101 <- QuantileNorm.train(
+#' model_nQ_99 <- QuantileNorm.train(
 #'   files = train_data$Path,
 #'   labels = train_data$Batch,
 #'   channels = channels,
 #'   transformList = transformList,
-#'   nQ = 101,
+#'   nQ = 99,
 #'   limit = c(0,8),
 #'   plot = TRUE)
 #' dev.off()
@@ -253,7 +253,7 @@ getQuantiles <- function(files,
 #'   labels = train_data$Batch,
 #'   channels = channels,
 #'   transformList = transformList,
-#'   nQ = 21,
+#'   nQ = 99,
 #'   goal = seq(0, 1, by = 0.05))
 #'
 #' @export
@@ -261,7 +261,7 @@ QuantileNorm.train <- function(files,
                                labels,
                                channels,
                                transformList,
-                               nQ = 101,
+                               nQ = 99,
                                limit = NULL,
                                quantileValues = NULL,
                                goal = "mean",
@@ -459,14 +459,14 @@ QuantileNorm.train <- function(files,
 #' transformList.reverse <- flowCore::transformList(channels,
 #'                                                  cytofTransform.reverse)
 #'
-#' model_nQ_101 <- QuantileNorm.train(
+#' model_nQ_99 <- QuantileNorm.train(
 #'   files = train_data$Path,
 #'   labels = train_data$Batch,
 #'   channels = channels,
 #'   transformList = transformList,
-#'   nQ = 101)
+#'   nQ = 99)
 #'
-#' QuantileNorm.normalize(model_nQ_101,
+#' QuantileNorm.normalize(model_nQ_99,
 #'                        validation_data$Path,
 #'                        validation_data$Batch,
 #'                        transformList = transformList,

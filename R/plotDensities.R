@@ -47,7 +47,7 @@
 #'                                               ydim = 15,
 #'                                               nClus = 10,
 #'                                               scale = FALSE),
-#'                         normParams = list(nQ = 101),
+#'                         normParams = list(nQ = 99),
 #'                         seed = 1,
 #'                         verbose = TRUE)
 #'

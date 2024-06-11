@@ -42,7 +42,7 @@
 #'                                               ydim = 10,
 #'                                               nClus = 5,
 #'                                               scale = FALSE),
-#'                         normParams = list(nQ = 101,
+#'                         normParams = list(nQ = 99,
 #'                                           limit = c(0,7)),
 #'                         seed = 1)
 #'
