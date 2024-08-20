@@ -1,5 +1,6 @@
 # CytoNorm
-R library to normalize cytometry data
+R library to normalize cytometry data.  
+! From version 2 onwards, the default number of quantiles is 99; the 0the and 100th quantiles are not included anymore.
 
 ## Installation
 
