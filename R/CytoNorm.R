@@ -204,7 +204,7 @@ CytoNorm.train <- function(files,
         stop("Input parameters 'labels' and 'files'",
              " should have the same length")
     }
-
+  
     # Create output directory
     dirCreated = FALSE
     if (!dir.exists(outputDir)) {
@@ -244,7 +244,28 @@ CytoNorm.train <- function(files,
     } else {
         fsom <- readRDS(file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
         warning("Reusing FlowSOM result previously saved at ",
-                file.path(outputDir, "CytoNorm_FlowSOM.RDS"))
+    file.path(outputDir, "CytoNorm_FlowSOM.RDS. 
+         If this was not intended, one can either specify another outputDir, 
+         make use of the recompute parameter or move the FlowSOM object in the 
+         file manager.\n"))
+    }
+    
+    # Error when goal does not correspond to FlowSOM model
+    if ("goal" %in% names(normParams) & is.list(normParams[["goal"]])){
+      if (length(normParams[["goal"]]) != FlowSOM::NMetaclusters(fsom)) {
+        stop(paste0(length(normParams[["goal"]]), " clusters in the goal",
+                    " distribution and ", FlowSOM::NMetaclusters(fsom), 
+                    " clusters in the FlowSOM model.
+  This should be the same."))
+      }
+      if ("nQ" %in% names(normParams)){
+        if (nrow(normParams[["goal"]][[1]]) != normParams[["nQ"]]) {
+          stop(paste0(nrow(normParams[["goal"]][[1]]), " quantiles in the goal",
+                      " distribution and ", normParams[["nQ"]], 
+                      " quantiles in the CytoNorm call.
+  This should be the same."))
+        }
+      }
     }
 
     # Split files by clusters

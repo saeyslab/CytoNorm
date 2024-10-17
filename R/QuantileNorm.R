@@ -331,8 +331,18 @@ QuantileNorm.train <- function(files,
                                    ncol = length(channels),
                                    dimnames = list(quantileValues,
                                                    channels))
-        } else if ((nrow(goal) == nQ) & (ncol(goal) == length(channels))){
+        } else if (is.matrix(goal)){
+          if ((nrow(goal) == nQ) & (ncol(goal) == length(channels))){
             refQuantiles <- goal
+          } else if ((nrow(goal) != nQ)){
+            stop(paste0(nrow(goal), " quantiles in the goal distribution and ", 
+                        nQ, " quantiles in the CytoNorm call.
+  This should be the same."))
+          } else {
+            stop(paste0(ncol(goal), " channels in the goal distribution and ", 
+                        length(channels), " channels in the CytoNorm call.
+  This should be the same."))
+          }
         } else {
             stop("Goal should be 'mean', a batch label, ",
                    "a numeric vector of length nQ, or a matrix with nQ rows
