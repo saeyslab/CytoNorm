@@ -36,3 +36,17 @@ vignettes/*.pdf
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
 .Rproj.user
+inst/doc
+
+# Folders that were created while generating vignettes
+vignettes/Data/
+vignettes/RDS/
+vignettes/tmp/
+vignettes/CytoNorm_without_controls_files/
+vignettes/CytoNorm_towards_distribution_files/
+vignettes/CytoNorm_channels_without_clustering_files/
+
+# Macbook files
+.DS_Store
+R/.DS_Store
+vignettes/.DS_Store

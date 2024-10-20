@@ -1,6 +1,6 @@
 # CytoNorm
 R library to normalize cytometry data.  
-! From version 2 onwards, the default number of quantiles is 99; the 0the and 100th quantiles are not included anymore.
+! From version 2 onwards, the default number of quantiles is 99; the 0th and 100th quantiles are not included anymore.
 
 ## Installation
 
@@ -20,6 +20,10 @@ The algorithm is run in two steps. First the model gets trained (blue part), by 
 Note that we assume that the first clustering step will not be impacted by the batch effects. This can be tested by computing the CV values for the clusters. If this assumption does not hold, you can use the quantile normalization without clustering instead. In this case, cell type specific artefacts might be missed.
 
 ## Usage
+The default workflow is explained below. However, vignettes are available for special use cases.
+- [Run CytoNorm without controls](vignettes/CytoNorm_without_controls.md):`vignette(CytoNorm_without_controls", package="CytoNorm")
+- [Run CytoNorm towards distribution](vignettes/CytoNorm_towards_distribution.md):`vignette(CytoNorm_towards_distribution", package="CytoNorm")
+- [Run CytoNorm on channels without using them for the clustering](vignettes/CytoNorm_channels_without_clustering.md):`vignette(CytoNorm_channels_without_clustering", package="CytoNorm")
 
 ### Identifying the data
 
@@ -110,3 +114,7 @@ CytoNorm.normalize(model = model,
                    clean = TRUE,
                    verbose = TRUE)
 ```
+
+## References
+Van Gassen et al. CytoNorm: A Normalization Algorithm for Cytometry Data
+Cytometry. Cytometry A 97, 268-228 (2020). <doi:10.1002/cyto.a.23904>
