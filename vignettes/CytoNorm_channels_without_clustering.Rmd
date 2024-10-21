@@ -1,8 +1,8 @@
 ---
-title: "Use case 3: CytoNorm_channels_without_clustering"
+title: "Use case 3: Normalize channels without including them in the clustering step"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Use case 3: CytoNorm_channels_without_clustering}
+  %\VignetteIndexEntry{Use case 3: Normalize channels without including them in the clustering step}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -137,6 +137,9 @@ plotSplines(model = model3_cellStateMarkersP1, channels = P1_cellStateChannels, 
 ### EMD and MAD
 #### Make aggregates and get aggregate manual labels
 ```{r Get manual labels}
+dir.create("tmp/before")
+dir.create("tmp/after")
+
 aggregates <- list("agg_P1_C2" = files_P1_C2)
 
 for (agg in names(aggregates)){

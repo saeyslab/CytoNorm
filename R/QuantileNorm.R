@@ -254,7 +254,7 @@ getQuantiles <- function(files,
 #'   channels = channels,
 #'   transformList = transformList,
 #'   nQ = 99,
-#'   goal = seq(0, 1, by = 0.05))
+#'   goal = seq(0.01, 0.99, by = 0.01))
 #'
 #' @export
 QuantileNorm.train <- function(files,

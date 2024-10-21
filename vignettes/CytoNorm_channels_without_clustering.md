@@ -1,5 +1,10 @@
-CytoNorm_channels_without_clustering
+Use case 3: Normalize channels without including them in the clustering
+step
 ================
+
+<!-- github markdown built using
+rmarkdown::render("vignettes/CytoNorm_channels_without_clustering.Rmd", output_format = "github_document")
+-->
 
 #### In this vignette, you learn how CytoNorm can be used to normalize markers that are not used during the clustering step.
 
@@ -97,7 +102,10 @@ model3_cellStateMarkersP1 <- CytoNorm.train(files = c(files_P1_C1_norm, files_P1
                                                                   nClus = 3, 
                                                                   scale = FALSE,
                                                                   colsToUse = cellTypeChannels))
-#> Warning in CytoNorm.train(files = c(files_P1_C1_norm, files_P1_C2_norm), : Reusing FlowSOM result previously saved at ./tmp/CytoNorm_FlowSOM.RDS
+#> Warning in CytoNorm.train(files = c(files_P1_C1_norm, files_P1_C2_norm), : Reusing FlowSOM result previously saved at ./tmp/CytoNorm_FlowSOM.RDS. 
+#>          If this was not intended, one can either specify another outputDir, 
+#>          make use of the recompute parameter or move the FlowSOM object in the 
+#>          file manager.
 #> Splitting Data/Normalized_cellType/ID1_Panel1_TP1.fcs
 #> Splitting Data/Normalized_cellType/ID1_Panel1_TP2.fcs
 #> Splitting Data/Normalized_cellType/ID1_Panel1_TP3.fcs
@@ -544,6 +552,17 @@ plotSplines(model = model3_cellStateMarkersP1, channels = P1_cellStateChannels, 
 #### Make aggregates and get aggregate manual labels
 
 ``` r
+dir.create("tmp/before")
+#> Warning in dir.create("tmp/before"): 'tmp/before' already exists
+```
+
+``` r
+dir.create("tmp/after")
+#> Warning in dir.create("tmp/after"): 'tmp/after' already exists
+```
+
+``` r
+
 aggregates <- list("agg_P1_C2" = files_P1_C2)
 
 for (agg in names(aggregates)){

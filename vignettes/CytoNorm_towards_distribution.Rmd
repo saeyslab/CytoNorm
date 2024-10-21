@@ -1,8 +1,8 @@
 ---
-title: "Use case 2: CytoNorm_towards_distribution"
+title: "Use case 2: Normalize towards specific distribution"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Use case 2: CytoNorm_towards_distribution}
+  %\VignetteIndexEntry{Use case 2: Normalize towards specific distribution}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -153,6 +153,9 @@ plotSplines(model = model2_towardsDistribution, channels = cellTypeChannels, gro
 ### EMD and MAD
 #### Make aggregates and get aggregate manual labels
 ```{r Get manual labels}
+dir.create("tmp/before")
+dir.create("tmp/after")
+
 aggregates <- list("agg_P1_C2" = files_P1_C2,
                    "agg_P2_C2" = files_P2_C2)
 

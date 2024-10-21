@@ -9,7 +9,7 @@ QuantileNorm.train(
   labels,
   channels,
   transformList,
-  nQ = 101,
+  nQ = 99,
   limit = NULL,
   quantileValues = NULL,
   goal = "mean",
@@ -30,7 +30,7 @@ belongs, e.g. the plate ID.}
 \item{transformList}{Transformation list to pass to the flowCore
 \code{transform} function}
 
-\item{nQ}{Number of quantiles to use. Default = 101, which results in
+\item{nQ}{Number of quantiles to use. Default = 99, which results in
 quantiles for every percent of the data.}
 
 \item{limit}{These values will be modelled to map onto themselves by the
@@ -82,27 +82,27 @@ channels <- grep("Di$", flowCore::colnames(ff), value = TRUE)
 transformList <- flowCore::transformList(channels,
                                          cytofTransform)
 
-png("nQ101.png",
+png("nQ99.png",
     width = length(channels) * 300,
     height = (nrow(train_data) * 2 + 1) * 300)
-model_nQ_101 <- QuantileNorm.train(
+model_nQ_99 <- QuantileNorm.train(
   files = train_data$Path,
   labels = train_data$Batch,
   channels = channels,
   transformList = transformList,
-  nQ = 101,
+  nQ = 99,
   plot = TRUE)
 dev.off()
 
-png("nQ101_limited.png",
+png("nQ99_limited.png",
     width = length(channels) * 300,
     height = (nrow(train_data) * 2 + 1) * 300)
-model_nQ_101 <- QuantileNorm.train(
+model_nQ_99 <- QuantileNorm.train(
   files = train_data$Path,
   labels = train_data$Batch,
   channels = channels,
   transformList = transformList,
-  nQ = 101,
+  nQ = 99,
   limit = c(0,8),
   plot = TRUE)
 dev.off()
@@ -138,8 +138,8 @@ model_goal_fixed <- QuantileNorm.train(
   labels = train_data$Batch,
   channels = channels,
   transformList = transformList,
-  nQ = 21,
-  goal = seq(0, 1, by = 0.05))
+  nQ = 99,
+  goal = seq(0.01, 0.99, by = 0.01))
 
 }
 \seealso{

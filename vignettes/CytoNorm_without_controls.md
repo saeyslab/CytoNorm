@@ -58,7 +58,6 @@ library(FlowSOM)
 ``` r
 library(ggpubr)
 #> Loading required package: ggplot2
-#> Want to understand how all the pieces fit together? Read R for Data Science: https://r4ds.hadley.nz/
 ```
 
 ``` r

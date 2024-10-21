@@ -1,4 +1,4 @@
-Use case 2: CytoNorm_towards_distribution
+Use case 2: Normalize towards specific distribution
 ================
 
 <!-- github markdown built using
@@ -113,7 +113,10 @@ model2_towardsDistribution <- CytoNorm.train(files = c(files_P1_C2, files_P2_C2)
                                                                    nClus = 3, 
                                                                    scale = FALSE),
                                              normParams = list("goal" = goal_q))
-#> Warning in CytoNorm.train(files = c(files_P1_C2, files_P2_C2), labels = c(rep(x = "P1", : Reusing FlowSOM result previously saved at ./tmp/CytoNorm_FlowSOM.RDS
+#> Warning in CytoNorm.train(files = c(files_P1_C2, files_P2_C2), labels = c(rep(x = "P1", : Reusing FlowSOM result previously saved at ./tmp/CytoNorm_FlowSOM.RDS. 
+#>          If this was not intended, one can either specify another outputDir, 
+#>          make use of the recompute parameter or move the FlowSOM object in the 
+#>          file manager.
 #> Splitting Data/Preprocessed/ID5_Panel1_TP1.fcs
 #> Warning in FlowSOM::NewData(fsom, ff): 967 cells (7.8%) seem far from their cluster centers.
 #> Splitting Data/Preprocessed/ID5_Panel1_TP2.fcs
@@ -611,6 +614,17 @@ plotSplines(model = model2_towardsDistribution, channels = cellTypeChannels, gro
 #### Make aggregates and get aggregate manual labels
 
 ``` r
+dir.create("tmp/before")
+#> Warning in dir.create("tmp/before"): 'tmp/before' already exists
+```
+
+``` r
+dir.create("tmp/after")
+#> Warning in dir.create("tmp/after"): 'tmp/after' already exists
+```
+
+``` r
+
 aggregates <- list("agg_P1_C2" = files_P1_C2,
                    "agg_P2_C2" = files_P2_C2)
 

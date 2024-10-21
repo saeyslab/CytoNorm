@@ -74,14 +74,14 @@ transformList <- flowCore::transformList(channels,
 transformList.reverse <- flowCore::transformList(channels,
                                                  cytofTransform.reverse)
 
-model_nQ_101 <- QuantileNorm.train(
+model_nQ_99 <- QuantileNorm.train(
   files = train_data$Path,
   labels = train_data$Batch,
   channels = channels,
   transformList = transformList,
-  nQ = 101)
+  nQ = 99)
 
-QuantileNorm.normalize(model_nQ_101,
+QuantileNorm.normalize(model_nQ_99,
                        validation_data$Path,
                        validation_data$Batch,
                        transformList = transformList,
