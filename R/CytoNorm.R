@@ -536,6 +536,9 @@ CytoNorm.normalize <- function(model,
                 file <- files[i]
                 ff <- flowCore::read.FCS(file, ...)
             }
+            if(!is.null(transformList)){
+              ff <- flowCore::transform(ff, transformList)
+            }
             if(verbose) message("Rebuilding ",file)
             for(cluster in unique(fsom$metaclustering)){
                 file_name <- file.path(outputDir,
