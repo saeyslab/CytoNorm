@@ -61,12 +61,14 @@ plotSplines <- function(model,
 
     minValue <- suppressWarnings(min(sapply(model$clusterRes,
                                             function(x) min(sapply(x$quantiles,
-                                                                   min,
-                                                                   na.rm = TRUE)))))
+                                                                   function(batchQuantiles){
+                                                                     min(batchQuantiles[,channels], na.rm=TRUE )
+                                                                   })))))
     maxValue <- suppressWarnings(max(sapply(model$clusterRes,
                                             function(x) max(sapply(x$quantiles,
-                                                                   max,
-                                                                   na.rm = TRUE)))))
+                                                                   function(batchQuantiles){
+                                                                     max(batchQuantiles[,channels], na.rm=TRUE )
+                                                                   })))))
     range <- maxValue - minValue
     minValue <- minValue - 0.1*range
     maxValue <- maxValue + 0.1*range

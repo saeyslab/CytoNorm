@@ -108,10 +108,6 @@ model2_towardsDistribution <- CytoNorm.train(files = c(files_P1_C2, files_P2_C2)
                                              seed = 1,
                                              plot = TRUE,
                                              verbose = TRUE,
-                                             FlowSOM.params = list(nCells = 1e+06, 
-                                                                   xdim = 7, ydim = 7, 
-                                                                   nClus = 3, 
-                                                                   scale = FALSE),
                                              normParams = list("goal" = goal_q))
 #> Warning in CytoNorm.train(files = c(files_P1_C2, files_P2_C2), labels = c(rep(x = "P1", : Reusing FlowSOM result previously saved at ./tmp/CytoNorm_FlowSOM.RDS. 
 #>          If this was not intended, one can either specify another outputDir, 
@@ -576,7 +572,8 @@ p <- plotDensities(input = list("P1_C2" = files_P1_C2,
 #> Reading Data/Normalized_cellType/ID8_Panel2_TP2.fcs
 #> Reading Data/Normalized_cellType/ID8_Panel2_TP3.fcs
 #> [1] "original"
-#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 19321 cells (8.05%) seem far from their cluster centers.
+#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 19321 cells (8.05%) seem far from their cluster
+#> centers.
 #> [1] "normalized"
 ```
 

@@ -515,7 +515,8 @@ p <- plotDensities(input = list("P1_C1" = files_P1_C1_norm,
 #> Reading Data/Normalized_cellState/ID8_Panel1_TP2.fcs
 #> Reading Data/Normalized_cellState/ID8_Panel1_TP3.fcs
 #> [1] "original"
-#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 1990 cells (1.16%) seem far from their cluster centers.
+#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 1990 cells (1.16%) seem far from their cluster
+#> centers.
 #> [1] "normalized"
 ```
 

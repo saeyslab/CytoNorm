@@ -91,10 +91,6 @@ model2_towardsDistribution <- CytoNorm.train(files = c(files_P1_C2, files_P2_C2)
                                              seed = 1,
                                              plot = TRUE,
                                              verbose = TRUE,
-                                             FlowSOM.params = list(nCells = 1e+06, 
-                                                                   xdim = 7, ydim = 7, 
-                                                                   nClus = 3, 
-                                                                   scale = FALSE),
                                              normParams = list("goal" = goal_q))
                                              #normParams = list("goal" = "P1")) #E.g. to normalize towards one of the batches
 saveRDS(object = model2_towardsDistribution, file = "RDS/model2_towardsDistribution.rds")
