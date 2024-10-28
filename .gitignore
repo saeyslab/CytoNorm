@@ -42,9 +42,6 @@ inst/doc
 vignettes/Data/
 vignettes/RDS/
 vignettes/tmp/
-vignettes/CytoNorm_without_controls_files/
-vignettes/CytoNorm_towards_distribution_files/
-vignettes/CytoNorm_channels_without_clustering_files/
 
 # Macbook files
 .DS_Store
