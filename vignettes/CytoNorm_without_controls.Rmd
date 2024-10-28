@@ -190,13 +190,11 @@ for (file in names(gating)){
   manualLabels[[paste0(file, ".fcs")]] <- factor(unname(dictionary[manual]),                                                 
                                                  levels = unname(dictionary))
 }
-saveRDS(manualLabels, "Data/Preprocessed/attachments/manualLabels.rds")
 
 # Aggregates
 dir.create("tmp/before")
 dir.create("tmp/after")
 manual_agg <- list()
-manualLabels <- readRDS("Data/Preprocessed/attachments/manualLabels.rds")
 
 aggregates <- list("agg_P1_C1" = files_P1_C1,
                    "agg_P2_C1" = files_P2_C1)
@@ -223,6 +221,7 @@ for (agg in names(aggregates)){
   manualLabels[[paste0(agg, ".fcs")]] <- factor(manual, levels = levels(manualLabels[[1]]))
   write.FCS(after, paste0("tmp/after/", agg, ".fcs"))
 }
+saveRDS(manualLabels, "Data/Preprocessed/attachments/manualLabels.rds")
 ```
 
 #### Define cell types and files for model evaluation

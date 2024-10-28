@@ -63,6 +63,7 @@ library(ggpubr)
 ``` r
 
 dir.create("RDS")
+#> Warning in dir.create("RDS"): 'RDS' already exists
 ```
 
 ### Download and organize the data
@@ -187,13 +188,10 @@ model1_withoutControl <- CytoNorm.train(files = flowSet(agg_P1_C1, agg_P2_C1),
                                                               xdim = 7, ydim = 7, 
                                                               nClus = 3, 
                                                               scale = FALSE))
-#> Plot FlowSOM trees
-#> Plot file distribution
-#> Calculate t-SNE
-#> Plot cluster per metacluster distribution
-#> Plot heatmap
-#> Make tables
-#> Printing
+#> Warning in CytoNorm.train(files = flowSet(agg_P1_C1, agg_P2_C1), labels = c("P1", : Reusing FlowSOM result previously saved at ./tmp/CytoNorm_FlowSOM.RDS. 
+#>          If this was not intended, one can either specify another outputDir, 
+#>          make use of the recompute parameter or move the FlowSOM object in the 
+#>          file manager.
 #> Splitting V1
 #> Splitting V2
 #> Processing cluster 1
@@ -525,8 +523,7 @@ p <- plotDensities(input = list("P1_C1" = agg_P1_C1,
 #> Reading Data/Normalized_cellType/ID4_Panel2_TP2.fcs
 #> Reading Data/Normalized_cellType/ID4_Panel2_TP3.fcs
 #> [1] "original"
-#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 1255 cells (1.14%) seem far from their cluster
-#> centers.
+#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 1255 cells (1.14%) seem far from their cluster centers.
 #> [1] "normalized"
 ```
 
@@ -597,13 +594,19 @@ for (file in names(gating)){
   manualLabels[[paste0(file, ".fcs")]] <- factor(unname(dictionary[manual]),                                                 
                                                  levels = unname(dictionary))
 }
-saveRDS(manualLabels, "Data/Preprocessed/attachments/manualLabels.rds")
 
 # Aggregates
 dir.create("tmp/before")
+#> Warning in dir.create("tmp/before"): 'tmp/before' already exists
+```
+
+``` r
 dir.create("tmp/after")
+#> Warning in dir.create("tmp/after"): 'tmp/after' already exists
+```
+
+``` r
 manual_agg <- list()
-manualLabels <- readRDS("Data/Preprocessed/attachments/manualLabels.rds")
 
 aggregates <- list("agg_P1_C1" = files_P1_C1,
                    "agg_P2_C1" = files_P2_C1)
@@ -632,6 +635,10 @@ for (agg in names(aggregates)){
 }
 #> agg_P1_C1
 #> agg_P2_C1
+```
+
+``` r
+saveRDS(manualLabels, "Data/Preprocessed/attachments/manualLabels.rds")
 ```
 
 #### Define cell types and files for model evaluation

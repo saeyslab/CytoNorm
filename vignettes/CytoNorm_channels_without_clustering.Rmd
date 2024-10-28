@@ -164,6 +164,7 @@ for (agg in names(aggregates)){
   manualLabels[[paste0(agg, ".fcs")]] <- factor(manual, levels = levels(manualLabels[[1]]))
   write.FCS(after, paste0("tmp/after/", agg, ".fcs"))
 }
+saveRDS(manualLabels, "Data/Preprocessed/attachments/manualLabels.rds")
 ```
 
 #### Define cell types and files for model evaluation

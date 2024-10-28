@@ -515,8 +515,7 @@ p <- plotDensities(input = list("P1_C1" = files_P1_C1_norm,
 #> Reading Data/Normalized_cellState/ID8_Panel1_TP2.fcs
 #> Reading Data/Normalized_cellState/ID8_Panel1_TP3.fcs
 #> [1] "original"
-#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 1990 cells (1.16%) seem far from their cluster
-#> centers.
+#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 1990 cells (1.16%) seem far from their cluster centers.
 #> [1] "normalized"
 ```
 
@@ -589,6 +588,10 @@ for (agg in names(aggregates)){
   write.FCS(after, paste0("tmp/after/", agg, ".fcs"))
 }
 #> agg_P1_C2
+```
+
+``` r
+saveRDS(manualLabels, "Data/Preprocessed/attachments/manualLabels.rds")
 ```
 
 #### Define cell types and files for model evaluation
@@ -681,10 +684,6 @@ p_emd <- ggplot(EMD_df, aes(x = after, y = before)) +
   theme_minimal()
 
 leg_emd <- get_legend(p_emd)
-#> Warning: Removed 42 rows containing missing values or values outside the scale range (`geom_point()`).
-```
-
-``` r
 
 p_emd <- p_emd  +
     theme(legend.position = "none")
@@ -720,7 +719,6 @@ plotlist[[length(plotlist)+1]] <- p_mad
 
 ggarrange(ggarrange(plotlist = plotlist),
           as_ggplot(leg_emd), ncol=2, widths = c(4,1.5))
-#> Warning: Removed 42 rows containing missing values or values outside the scale range (`geom_point()`).
 ```
 
 ![](CytoNorm_channels_without_clustering_files/figure-gfm/EMD%20and%20MAD%20figures-1.png)<!-- -->

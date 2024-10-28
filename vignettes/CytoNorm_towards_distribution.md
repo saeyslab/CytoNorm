@@ -572,8 +572,7 @@ p <- plotDensities(input = list("P1_C2" = files_P1_C2,
 #> Reading Data/Normalized_cellType/ID8_Panel2_TP2.fcs
 #> Reading Data/Normalized_cellType/ID8_Panel2_TP3.fcs
 #> [1] "original"
-#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 19321 cells (8.05%) seem far from their cluster
-#> centers.
+#> Warning in FlowSOM::NewData(model$fsom, as.matrix(dfs[[type]][model$fsom$map$colsUsed])): 19321 cells (8.05%) seem far from their cluster centers.
 #> [1] "normalized"
 ```
 
@@ -713,62 +712,6 @@ for (subset in names(models)){
       }
   }
 }
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
-#> Warning in max(dist[[cellType]][[marker]][25:26, 27:28], na.rm = T): no non-missing arguments to max; returning -Inf
 ```
 
 #### Make figures
