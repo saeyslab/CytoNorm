@@ -1,7 +1,7 @@
 Package: CytoNorm
 Type: Package
 Title: Normalisation of cytometry data measured across multiple batches
-Version: 2.0.7
+Version: 2.0.8
 Authors@R: c(person("Sofie", "Van Gassen", role = c("aut", "cre"),
             email = "sofie.vangassen@ugent.be"), 
             person("Katrien", "Quintelier", role = c("aut"),
@@ -23,12 +23,14 @@ Imports:
     ggplot2 (>= 3.5.1),
     ggpubr,
     methods,
-    gridExtra
+    gridExtra,
+    ggridges,
+    tidyr
 Suggests:
     BiocStyle,
     knitr,
     rmarkdown
 License: GPL (>= 2)
 LazyData: TRUE
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
