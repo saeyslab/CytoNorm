@@ -373,7 +373,7 @@ emdEvaluation <- function(files,
         }
         for (cellType in cellTypes) {
             if (is.null(manual) | cellType == "AllCells") {
-                selection <- seq_len(flowCore::nrow(ff))
+              selection <- rep(TRUE, flowCore::nrow(ff))
             } else {
                 selection <- manual[[gsub(prefix, "", gsub(".*/",
                                                            "", file))]] == cellType
@@ -496,7 +496,7 @@ madEvaluation <- function (files,
             ff <- flowCore::transform(ff, transformList)
         for (cellType in cellTypes) {
             if (is.null(manual) | cellType == "AllCells") {
-                selection <- seq_len(flowCore::nrow(ff))
+              selection <- rep(TRUE, flowCore::nrow(ff))
             } else {
                 selection <- manual[[gsub(prefix, "", gsub(".*/",
                                                              "", file))]] == cellType
