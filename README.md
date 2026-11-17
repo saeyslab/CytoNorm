@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/CytoNorm.png" alt="CytoNorm logo" width="200">
+</p>
+
 # CytoNorm
 R library to normalize cytometry data.  
 ! From version 2 onwards, the default number of quantiles is 99; the 0th and 100th quantile are not included anymore.
