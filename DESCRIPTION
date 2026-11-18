@@ -1,7 +1,7 @@
 Package: CytoNorm
 Type: Package
 Title: Normalisation of cytometry data measured across multiple batches
-Version: 2.0.12
+Version: 2.0.13
 Authors@R: c(person("Sofie", "Van Gassen", role = c("aut", "cre"),
             email = "sofie.vangassen@ugent.be"), 
             person("Katrien", "Quintelier", role = c("aut"),
@@ -32,6 +32,6 @@ Suggests:
     rmarkdown
 License: GPL (>= 2)
 LazyData: TRUE
-RoxygenNote: 7.3.3
 Encoding: UTF-8
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

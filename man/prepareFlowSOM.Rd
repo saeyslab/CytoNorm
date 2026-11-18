@@ -8,7 +8,7 @@ prepareFlowSOM(
   files,
   colsToUse,
   nCells = 1e+06,
-  FlowSOM.params = list(xdim = 15, ydim = 15, nClus = 30, scale = FALSE),
+  FlowSOM.params = list(xdim = 15, ydim = 15, nClus = 10, scale = FALSE),
   transformList = NULL,
   verbose = FALSE,
   seed = NULL,
