@@ -86,9 +86,7 @@
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr arrange
 #' @importFrom stats quantile
-#' @importFrom ggplot2 ggplot aes scale_fill_manual ggplot_build geom_path
-#'                     geom_point xlab
-#'                     theme_minimal theme_minimal
+#' @importFrom ggplot2 ggplot aes scale_fill_manual ggplot_build geom_path geom_point xlab theme_minimal theme_minimal
 
 #' @export
 #' 

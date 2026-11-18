@@ -83,8 +83,7 @@
 #' @importFrom flowCore read.FCS transform flowFrame
 #' @importFrom FlowSOM AggregateFlowFrames NewData GetMetaclusters
 #' @importFrom dplyr sym
-#' @importFrom ggplot2 ggplot aes stat_density scale_color_manual xlab
-#'                     theme_minimal theme .data xlim
+#' @importFrom ggplot2 ggplot aes stat_density scale_color_manual xlab theme_minimal theme .data xlim
 #' @importFrom ggpubr get_legend
 #'
 #' @export
